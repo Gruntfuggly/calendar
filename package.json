@@ -1,0 +1,170 @@
+{
+    "name": "calendar",
+    "displayName": "Calendar",
+    "icon": "resources/calendar.png",
+    "description": "A VSCode extension to view and create upcoming calendar appointments",
+    "version": "0.0.1",
+    "publisher": "Gruntfuggly",
+    "repository": "https://github.com/Gruntfuggly/calendar",
+    "engines": {
+        "vscode": "^1.5.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./extension",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "calendar",
+                    "title": "Calendar",
+                    "icon": "resources/calendar-container.svg"
+                }
+            ]
+        },
+        "views": {
+            "explorer": [
+                {
+                    "id": "calendar-explorer",
+                    "name": "Calendar",
+                    "when": "calendar-in-explorer"
+                }
+            ],
+            "calendar": [
+                {
+                    "id": "calendar",
+                    "name": "Calendar"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "calendar.authorize",
+                    "when": "view =~ /calendar/ && !calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "calendar.search",
+                    "when": "view =~ /calendar/ && !calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "calendar.clearFilter",
+                    "when": "view =~ /calendar/ && calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "calendar.refresh",
+                    "when": "view =~ /calendar/ && calendar-is-authorized",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "calendar.expand",
+                    "when": "view =~ /calendar/ && calendar-show-expand && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "calendar.collapse",
+                    "when": "view =~ /calendar/ && calendar-show-collapse && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@3"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "calendar.authorize",
+                "title": "Authorize",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/authorize.svg",
+                    "light": "resources/icons/light/authorize.svg"
+                }
+            },
+            {
+                "command": "calendar.refresh",
+                "title": "Refresh",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/refresh.svg",
+                    "light": "resources/icons/light/refresh.svg"
+                }
+            },
+            {
+                "command": "calendar.search",
+                "title": "Search",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/filter.svg",
+                    "light": "resources/icons/light/filter.svg"
+                }
+            },
+            {
+                "command": "calendar.clearFilter",
+                "title": "Clear",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/clear-filter.svg",
+                    "light": "resources/icons/light/clear-filter.svg"
+                }
+            },
+            {
+                "command": "calendar.expand",
+                "title": "Expand all",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/expand.svg",
+                    "light": "resources/icons/light/expand.svg"
+                }
+            },
+            {
+                "command": "calendar.collapse",
+                "title": "Collapse all",
+                "category": "calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/collapse.svg",
+                    "light": "resources/icons/light/collapse.svg"
+                }
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Calendar",
+            "properties": {
+                "calendar.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Enable a debug channel in the output view"
+                },
+                "calendar.showInExplorer": {
+                    "type": "boolean",
+                    "markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
+                    "default": true
+                },
+                "calendar.google.credentialsFile": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
+                },
+                "calendar.maxEvents": {
+                    "type": "integer",
+                    "default": 10,
+                    "markdownDescription": "Maximum number of future events to fetch from your calendar"
+                },
+                "calendar.showRelativeDates": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Set to false to show full dates instead of **Today**, **Tomorrow**, etc."
+                }
+            }
+        }
+    },
+    "scripts": {},
+    "dependencies": {
+        "googleapis": "^39.2.0"
+    }
+}
