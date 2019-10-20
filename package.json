@@ -150,6 +150,16 @@
                     "default": "",
                     "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
                 },
+                "calendar.outlook.clientId": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client ID - see TBD"
+                },
+                "calendar.outlook.clientSecret": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client secret - see TBD"
+                },
                 "calendar.maxEvents": {
                     "type": "integer",
                     "default": 10,
@@ -165,6 +175,7 @@
     },
     "scripts": {},
     "dependencies": {
-        "googleapis": "^39.2.0"
+        "googleapis": "^44.0.0",
+        "simple-oauth2": "^3.0.0"
     }
 }
