@@ -1,14 +1,9 @@
 
 var vscode = require( 'vscode' );
 var TreeView = require( "./tree" );
-var fetchGoogle = require( './google' ).fetch;
+var googleCalendar = require( './google' );
+var outlookCalendar = require( './outlook' );
 
-// var OPEN_SETTINGS = "Open Settings";
-// var GET_CODE = "Get Authorization Code";
-// var ENTER_CODE = "Enter Authorization Code";
-
-// client ID: 82f8d382-a052-4e97-b16a-e81a862ea59d
-// client secret: bs1e0Yyplg[?0x9.zpss@q31uiU8@=Ei
 function activate( context )
 {
     var outputChannel;
@@ -41,17 +36,32 @@ function activate( context )
 
     function fetch()
     {
-        fetchGoogle( function( events )
+        var config = vscode.workspace.getConfiguration( 'calendar' );
+        if( config.get( 'google.enabled' ) )
         {
-            events.map( function( event )
+            googleCalendar.fetch( function( events )
             {
-                debug( "Event:" + JSON.stringify( event ) );
-                calendarTree.add( event );
-            } );
-            filterTree( context.workspaceState.get( 'calendar.filter' ) );
-            calendarTree.refresh();
-            setButtons();
-        }, context, debug );
+                events.map( function( event )
+                {
+                    debug( "Event:" + JSON.stringify( event ) );
+                    calendarTree.add( event );
+                } );
+                filterTree( context.workspaceState.get( 'calendar.filter' ) );
+                calendarTree.refresh();
+                setButtons();
+            }, context, debug );
+        }
+
+        if( config.get( 'outlook.enabled' ) )
+        {
+            outlookCalendar.setCredentials(
+                config.get( 'outlook.clientId' ),
+                config.get( 'outlook.clientSecret' ) );
+
+            outlookCalendar.fetch( function( events )
+            {
+            }, context, debug );
+        }
     }
 
     function refresh()

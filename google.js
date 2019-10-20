@@ -92,7 +92,7 @@ function fetch( propulateTree, context, debug )
             scope: SCOPES,
         } );
         debug( "token URL: " + authUrl );
-        vscode.window.showInformationMessage( 'Calendar authorization required', GET_CODE, ENTER_CODE ).then( function( action )
+        vscode.window.showInformationMessage( 'Google calendar authorization required', GET_CODE, ENTER_CODE ).then( function( action )
         {
             if( action === GET_CODE )
             {

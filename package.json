@@ -79,7 +79,7 @@
             {
                 "command": "calendar.authorize",
                 "title": "Authorize",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/authorize.svg",
                     "light": "resources/icons/light/authorize.svg"
@@ -88,7 +88,7 @@
             {
                 "command": "calendar.refresh",
                 "title": "Refresh",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/refresh.svg",
                     "light": "resources/icons/light/refresh.svg"
@@ -97,7 +97,7 @@
             {
                 "command": "calendar.search",
                 "title": "Search",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/filter.svg",
                     "light": "resources/icons/light/filter.svg"
@@ -106,7 +106,7 @@
             {
                 "command": "calendar.clearFilter",
                 "title": "Clear",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/clear-filter.svg",
                     "light": "resources/icons/light/clear-filter.svg"
@@ -115,7 +115,7 @@
             {
                 "command": "calendar.expand",
                 "title": "Expand all",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/expand.svg",
                     "light": "resources/icons/light/expand.svg"
@@ -124,7 +124,7 @@
             {
                 "command": "calendar.collapse",
                 "title": "Collapse all",
-                "category": "calendar",
+                "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/collapse.svg",
                     "light": "resources/icons/light/collapse.svg"
@@ -145,10 +145,20 @@
                     "markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
                     "default": true
                 },
+                "calendar.google.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "If true, fetch your events from your google calendar"
+                },
                 "calendar.google.credentialsFile": {
                     "type": "string",
                     "default": "",
                     "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
+                },
+                "calendar.outlook.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "If true, fetch your events from your google calendar"
                 },
                 "calendar.outlook.clientId": {
                     "type": "string",
