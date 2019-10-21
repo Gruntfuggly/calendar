@@ -40,11 +40,11 @@ function getLabel( date )
     {
         var tomorrow = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 1 );
         var thisWeek = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 7 );
-        if( targetDate === today )
+        if( targetDate.getTime() === today.getTime() )
         {
             return "Today";
         }
-        else if( targetDate === tomorrow )
+        else if( targetDate.getTime() === tomorrow.getTime() )
         {
             return "Tomorrow";
         }
