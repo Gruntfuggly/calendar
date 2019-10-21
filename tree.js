@@ -1,5 +1,6 @@
 var vscode = require( 'vscode' );
 var path = require( "path" );
+var utils = require( './utils' );
 
 var dateNodes = [];
 var expandedNodes = {};
@@ -38,13 +39,12 @@ function getLabel( date )
 
     if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showRelativeDates' ) )
     {
-        var tomorrow = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 1 );
         var thisWeek = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 7 );
-        if( targetDate.getTime() === today.getTime() )
+        if( utils.isToday( date ) )
         {
             return "Today";
         }
-        else if( targetDate.getTime() === tomorrow.getTime() )
+        else if( utils.isTomorrow( date ) )
         {
             return "Tomorrow";
         }

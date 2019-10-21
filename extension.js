@@ -3,12 +3,15 @@ var vscode = require( 'vscode' );
 var TreeView = require( "./tree" );
 var googleCalendar = require( './google' );
 var outlookCalendar = require( './outlook' );
+var utils = require( './utils' );
 
 function activate( context )
 {
     var refreshTimer;
-
     var outputChannel;
+
+    var allDayRemindersShown = false;
+
     var calendarTree = new TreeView.CalendarDataProvider( context, outputChannel );
 
     var calendarViewExplorer = vscode.window.createTreeView( "calendar-explorer", { treeDataProvider: calendarTree } );
@@ -45,7 +48,27 @@ function activate( context )
         if( interval > 0 )
         {
             debug( "Refreshing in " + interval + " minutes" );
-            refreshTimer = setInterval( fetch, interval * 60 * 1000 );
+            refreshTimer = setInterval( refresh, interval * 60 * 1000 );
+        }
+    }
+
+    function showAllDayReminders( events )
+    {
+        if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showAllDayRemindersAtStartup' ) )
+        {
+            events.map( function( event )
+            {
+                if( googleCalendar.isAllDay( event ) )
+                {
+                    var date = new Date( event.start.date );
+                    var isToday = utils.isToday( date );
+                    if( isToday || utils.isTomorrow( date ) )
+                    {
+                        var label = isToday ? "Today" : "Tomorrow";
+                        vscode.window.showInformationMessage( label + ": " + event.summary );
+                    }
+                }
+            } );
         }
     }
 
@@ -64,6 +87,10 @@ function activate( context )
                 filterTree( context.workspaceState.get( 'calendar.filter' ) );
                 calendarTree.refresh();
                 setButtons();
+                if( !allDayRemindersShown )
+                {
+                    showAllDayReminders( events );
+                }
             }, context, debug );
         }
 

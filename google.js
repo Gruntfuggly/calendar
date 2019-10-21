@@ -146,4 +146,10 @@ function fetch( propulateTree, context, debug )
     }
 }
 
+function isAllDay( event )
+{
+    return event.start.date !== undefined;
+}
+
 module.exports.fetch = fetch;
+module.exports.isAllDay = isAllDay;
