@@ -179,6 +179,11 @@
                     "type": "boolean",
                     "default": true,
                     "markdownDescription": "Set to false to show full dates instead of **Today**, **Tomorrow**, etc."
+                },
+                "calendar.autoRefreshInterval": {
+                    "type": "integer",
+                    "default": 60,
+                    "markdownDescription": "The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing."
                 }
             }
         }

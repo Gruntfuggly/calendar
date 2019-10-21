@@ -6,6 +6,8 @@ var outlookCalendar = require( './outlook' );
 
 function activate( context )
 {
+    var refreshTimer;
+
     var outputChannel;
     var calendarTree = new TreeView.CalendarDataProvider( context, outputChannel );
 
@@ -31,6 +33,19 @@ function activate( context )
         {
             outputChannel = vscode.window.createOutputChannel( "Calendar" );
             debug( "Ready" );
+        }
+    }
+
+    function setAutoRefreshTimer()
+    {
+        debug( "setAutoRefreshTimer" );
+        clearInterval( refreshTimer );
+
+        var interval = vscode.workspace.getConfiguration( 'calendar' ).get( 'autoRefreshInterval', 60 );
+        if( interval > 0 )
+        {
+            debug( "Refreshing in " + interval + " minutes" );
+            refreshTimer = setInterval( fetch, interval * 60 * 1000 );
         }
     }
 
@@ -196,6 +211,10 @@ function activate( context )
                 {
                     resetOutputChannel();
                 }
+                else if( e.affectsConfiguration( 'calendar.autoRefreshInterval' ) )
+                {
+                    setAutoRefreshTimer()
+                }
                 else if(
                     e.affectsConfiguration( 'calendar.google.credentialsFile' ) ||
                     e.affectsConfiguration( 'calendar.maxEvents' ) ||
@@ -211,6 +230,7 @@ function activate( context )
         resetOutputChannel();
         setButtons();
         fetch();
+        setAutoRefreshTimer();
     }
 
     register();
