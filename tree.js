@@ -17,51 +17,6 @@ Date.prototype.withoutTime = function()
     return d;
 };
 
-function daysBetween( startDate, endDate )
-{
-    // Original function by https://stackoverflow.com/users/2596252/rmcmullan
-
-    // The number of milliseconds in all UTC days (no DST)
-    var ONE_DAY = 24 * 60 * 60 * 1000;
-
-    // A day in UTC always lasts 24 hours (unlike in other time formats)
-    var start = Date.UTC( endDate.getFullYear(), endDate.getMonth(), endDate.getDate() );
-    var end = Date.UTC( startDate.getFullYear(), startDate.getMonth(), startDate.getDate() );
-
-    // so it's safe to divide by 24 hours
-    return Math.abs( ( start - end ) / ONE_DAY );
-}
-
-function getLabel( date )
-{
-    var targetDate = date.withoutTime();
-    var today = new Date().withoutTime();
-
-    if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showRelativeDates' ) )
-    {
-        var thisWeek = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 7 );
-        if( utils.isToday( date ) )
-        {
-            return "Today";
-        }
-        else if( utils.isTomorrow( date ) )
-        {
-            return "Tomorrow";
-        }
-        else if( daysBetween( targetDate, thisWeek ) < 8 )
-        {
-            var options = { weekday: 'long' };
-            return date.toLocaleString( vscode.env.language, options );
-        }
-    }
-
-    var withoutYear = { weekday: 'long', month: 'long', day: 'numeric' };
-    var withYear = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return targetDate.getYear() == today.getYear()
-        ? date.toLocaleString( vscode.env.language, withoutYear )
-        : date.toLocaleString( vscode.env.language, withYear );
-}
-
 var isVisible = function( node )
 {
     return node.visible === true;
@@ -162,16 +117,18 @@ class CalendarDataProvider
             }
         }
 
-        if( node.clickable )
-        {
-            treeItem.command = {
-                command: "calendar-view.open",
-                title: "",
-                arguments: [
-                    node.url
-                ]
-            };
-        }
+        treeItem.contextValue = node.contextValue;
+
+        // if( node.clickable )
+        // {
+        //     treeItem.command = {
+        //         command: "calendar-view.open",
+        //         title: "",
+        //         arguments: [
+        //             node.url
+        //         ]
+        //     };
+        // }
 
         return treeItem;
     }
@@ -181,7 +138,7 @@ class CalendarDataProvider
         dateNodes = [];
     }
 
-    add( event )
+    add( event, source )
     {
         function findDate( node )
         {
@@ -190,7 +147,7 @@ class CalendarDataProvider
 
         var isAllDay = event.start.date !== undefined;
         var startDate = new Date( isAllDay ? event.start.date : event.start.dateTime );
-        var multipleDays = event.end.date && daysBetween( new Date( event.end.date ), startDate ) > 1;
+        var multipleDays = event.end.date && utils.daysBetween( new Date( event.end.date ), startDate ) > 1;
 
         var dateNode = dateNodes.find( findDate, startDate.withoutTime().toISOString() );
 
@@ -200,7 +157,7 @@ class CalendarDataProvider
                 type: DATE,
                 date: startDate.withoutTime().toISOString(),
                 id: ( buildCounter * 1000000 ) + nodeCounter++,
-                label: getLabel( startDate ),
+                label: utils.dateLabel( startDate ),
                 nodes: [],
                 visible: true,
                 icon: 'calendar'
@@ -208,7 +165,7 @@ class CalendarDataProvider
 
             if( multipleDays === true )
             {
-                dateNode.label += " until " + getLabel( new Date( event.end.date ) );
+                dateNode.label += " until " + utils.dateLabel( new Date( event.end.date ) );
             }
 
             dateNodes.push( dateNode );
@@ -223,13 +180,16 @@ class CalendarDataProvider
 
         var eventNode = {
             type: EVENT,
+            event: event,
             label: ( !isAllDay ? startDate.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) + ', ' : '' ) + event.summary,
             id: ( buildCounter * 1000000 ) + nodeCounter++,
             date: startDate.withoutTime().toISOString(),
             url: event.htmlLink,
             tooltip: tooltip,
             visible: true,
-            icon: isAllDay ? 'calendar' : 'time'
+            icon: isAllDay ? 'calendar' : 'time',
+            contextValue: 'canEdit canDelete',
+            source: source
         };
 
         var icons = [

@@ -1,9 +1,13 @@
 
 var vscode = require( 'vscode' );
-var TreeView = require( "./tree" );
+var chrono = require( 'chrono-node' );
 var googleCalendar = require( './google' );
 var outlookCalendar = require( './outlook' );
+var TreeView = require( './tree' );
 var utils = require( './utils' );
+
+var GOOGLE = 'GOOGLE';
+var OUTLOOK = 'OUTLOOK';
 
 function activate( context )
 {
@@ -82,7 +86,7 @@ function activate( context )
                 events.map( function( event )
                 {
                     debug( "Event:" + JSON.stringify( event ) );
-                    calendarTree.add( event );
+                    calendarTree.add( event, GOOGLE );
                 } );
                 filterTree( context.workspaceState.get( 'calendar.filter' ) );
                 calendarTree.refresh();
@@ -178,15 +182,16 @@ function activate( context )
 
     function register()
     {
+        // TODO fish
         vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
 
         vscode.commands.registerCommand( 'calendar.open', function( url )
         {
             debug( "Opening calendar, URL: " + url );
             // TODO Open in browser
-        } );
+        } ); // TODO other
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', fetch ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', refresh ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.refresh', refresh ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.expand', expand ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.collapse', collapse ) );
@@ -195,7 +200,7 @@ function activate( context )
         {
             // function purgeFolder( folder )
             // {
-            //     fs.readdir( folder, function( err, files )
+            //     fs.readdir( folder, function(br err, files )
             //     {
             //         files.map( function( file )
             //         {
@@ -204,7 +209,8 @@ function activate( context )
             //     } );
             // }
 
-            context.workspaceState.update( 'calendar.google.token', undefined );
+            context.globalState.update( 'calendar.google.token', undefined );
+
             context.workspaceState.update( 'calendar.expanded', undefined );
             context.workspaceState.update( 'calendar.filter', undefined );
             context.workspaceState.update( 'calendar.expandedNodes', undefined );
@@ -220,6 +226,80 @@ function activate( context )
                 {
                     filterTree( term );
                 } );
+            } );
+        } ) );
+
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.createEvent', function()
+        {
+            vscode.window.showInputBox( { prompt: "Please enter an event description" } ).then( function( summary )
+            {
+                if( summary )
+                {
+                    vscode.window.showInputBox( { prompt: "Please enter the date and time of the event", placeHolder: "E.g., Tomorrow at 6.30pm" } ).then( function( dateTime )
+                    {
+                        if( dateTime !== undefined )
+                        {
+                            var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
+                            var eventDate = parsed[ 0 ].start.date();
+                            var config = vscode.workspace.getConfiguration( 'calendar' );
+
+                            if( config.get( 'google.enabled' ) )
+                            {
+                                googleCalendar.createEvent( summary, eventDate, debug, refresh );
+                            }
+                        }
+                    } );
+                }
+            } );
+        } ) );
+
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.editEvent', function( e )
+        {
+            vscode.window.showInputBox( {
+                prompt: "Please modify the event description",
+                value: e.event.summary
+            } ).then( function( summary )
+            {
+                if( summary )
+                {
+                    var isAllDay = e.event.start.date !== undefined;
+                    var originalDateTime = new Date( isAllDay ? e.event.start.date : e.event.start.dateTime );
+                    var originalText = utils.dateLabel( originalDateTime );
+                    if( !isAllDay )
+                    {
+                        originalText += ' ' + originalDateTime.toLocaleTimeString();
+                    }
+                    vscode.window.showInputBox( {
+                        prompt: "Please update the date and time of the event",
+                        value: originalText,
+                        placeHolder: "E.g., Tomorrow at 6.30pm"
+                    } ).then( function( dateTime )
+                    {
+                        if( dateTime !== undefined )
+                        {
+                            var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
+                            var eventDate = parsed[ 0 ].start.date();
+                            if( e.source === GOOGLE )
+                            {
+                                googleCalendar.editEvent( e.event.id, summary, eventDate, debug, refresh );
+                            }
+                        }
+                    } );
+                }
+            } );
+        } ) );
+
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.deleteEvent', function( e )
+        {
+            vscode.window.showInformationMessage( "Are you sure you want to delete this event?", 'Yes', 'No' ).then( function( confirm )
+            {
+                if( confirm === 'Yes' )
+                {
+                    if( e.source === GOOGLE )
+                    {
+                        googleCalendar.deleteEvent( e.event.id, debug, refresh );
+                    }
+                }
             } );
         } ) );
 

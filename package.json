@@ -49,29 +49,46 @@
                     "group": "navigation@1"
                 },
                 {
+                    "command": "calendar.createEvent",
+                    "when": "view =~ /calendar/ && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
                     "command": "calendar.search",
                     "when": "view =~ /calendar/ && !calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
-                    "group": "navigation@1"
+                    "group": "navigation@2"
                 },
                 {
                     "command": "calendar.clearFilter",
                     "when": "view =~ /calendar/ && calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
-                    "group": "navigation@1"
+                    "group": "navigation@2"
                 },
                 {
                     "command": "calendar.refresh",
                     "when": "view =~ /calendar/ && calendar-is-authorized",
-                    "group": "navigation@2"
+                    "group": "navigation@3"
                 },
                 {
                     "command": "calendar.expand",
                     "when": "view =~ /calendar/ && calendar-show-expand && calendar-tree-has-content && calendar-is-authorized",
-                    "group": "navigation@3"
+                    "group": "navigation@4"
                 },
                 {
                     "command": "calendar.collapse",
                     "when": "view =~ /calendar/ && calendar-show-collapse && calendar-tree-has-content && calendar-is-authorized",
-                    "group": "navigation@3"
+                    "group": "navigation@4"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "calendar.deleteEvent",
+                    "when": "view =~ /calendar/ && viewItem =~ /canDelete/",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "calendar.editEvent",
+                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/",
+                    "group": "inline@1"
                 }
             ]
         },
@@ -84,6 +101,11 @@
                     "dark": "resources/icons/dark/authorize.svg",
                     "light": "resources/icons/light/authorize.svg"
                 }
+            },
+            {
+                "command": "calendar.resetCache",
+                "title": "Reset Cache",
+                "category": "Calendar"
             },
             {
                 "command": "calendar.refresh",
@@ -128,6 +150,33 @@
                 "icon": {
                     "dark": "resources/icons/dark/collapse.svg",
                     "light": "resources/icons/light/collapse.svg"
+                }
+            },
+            {
+                "command": "calendar.createEvent",
+                "title": "Create New Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/calendar.svg",
+                    "light": "resources/icons/light/calendar.svg"
+                }
+            },
+            {
+                "command": "calendar.editEvent",
+                "title": "Edit Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/edit.svg",
+                    "light": "resources/icons/light/edit.svg"
+                }
+            },
+            {
+                "command": "calendar.deleteEvent",
+                "title": "Delete Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/trash.svg",
+                    "light": "resources/icons/light/trash.svg"
                 }
             }
         ],
@@ -200,6 +249,7 @@
     },
     "scripts": {},
     "dependencies": {
+        "chrono-node": "^1.3.11",
         "googleapis": "^44.0.0",
         "simple-oauth2": "^3.0.0"
     }
