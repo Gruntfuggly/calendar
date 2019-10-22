@@ -240,8 +240,8 @@
                     "markdownDescription": "The number of minutes prior to an event to show a reminder. Set to zero to disable reminders."
                 },
                 "calendar.showAllDayRemindersAtStartup": {
-                    "type": "integer",
-                    "default": 60,
+                    "type": "boolean",
+                    "default": true,
                     "markdownDescription": "If true, reminders for all day events occurring today and tomorrow will be shown."
                 }
             }

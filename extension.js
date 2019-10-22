@@ -182,14 +182,13 @@ function activate( context )
 
     function register()
     {
-        // TODO fish
         vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
 
         vscode.commands.registerCommand( 'calendar.open', function( url )
         {
             debug( "Opening calendar, URL: " + url );
             // TODO Open in browser
-        } ); // TODO other
+        } );
 
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', refresh ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.refresh', refresh ) );

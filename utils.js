@@ -54,7 +54,6 @@ function dateLabel( date )
 
     if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showRelativeDates' ) )
     {
-        var thisWeek = new Date( today.getFullYear(), today.getMonth(), today.getDate() + 7 );
         if( isToday( date ) )
         {
             return "Today";
@@ -63,7 +62,7 @@ function dateLabel( date )
         {
             return "Tomorrow";
         }
-        else if( daysBetween( targetDate, thisWeek ) < 8 )
+        else if( daysBetween( targetDate, today ) < 8 )
         {
             var options = { weekday: 'long' };
             return date.toLocaleString( vscode.env.language, options );
