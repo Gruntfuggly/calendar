@@ -258,7 +258,7 @@
                 },
                 "calendar.outlook.enabled": {
                     "type": "boolean",
-                    "default": "If true, reminders for all day events occurring today and tomorrow will be shown.",
+                    "default": false,
                     "markdownDescription": "If true, fetch your events from your google calendar"
                 },
                 "calendar.outlook.clientId": {
