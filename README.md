@@ -7,6 +7,7 @@ events to be created, modified and deleted.
 
 ## TODO
 
+- [ ] Support for showing some historic events
 - [ ] Support for adding all-day events
 - [ ] Support for adding/editing multi-day events
 - [ ] Support for Outlook calendars

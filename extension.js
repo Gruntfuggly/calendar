@@ -290,17 +290,47 @@ function activate( context )
             {
                 if( summary )
                 {
-                    vscode.window.showInputBox( { prompt: "Please enter the date and time of the event", placeHolder: "E.g., Tomorrow at 6.30pm" } ).then( function( dateTime )
+                    var status = vscode.window.createStatusBarItem();
+                    status.text = "Creating event...";
+                    status.show();
+
+                    vscode.window.showInputBox( {
+                        prompt: "Please enter the date and time of the event",
+                        placeHolder: "E.g., Tomorrow at 6.30pm",
+                        validateInput: function( value )
+                        {
+                            var parsed = chrono.parse( value, new Date(), { forwardDate: true } );
+                            if( parsed.length > 0 )
+                            {
+                                status.text = "Creating event at " + parsed[ 0 ].start.date().toLocaleString();
+                                return "";
+                            }
+                            status.text = "Creating event...";
+                            return "Date and time not understood (yet)";
+                        }
+                    } ).then( function( dateTime )
                     {
+                        status.dispose();
                         if( dateTime !== undefined )
                         {
                             var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
-                            var eventDate = parsed[ 0 ].start.date();
-                            var config = vscode.workspace.getConfiguration( 'calendar' );
-
-                            if( config.get( 'google.enabled' ) )
+                            if( parsed.length > 0 )
                             {
-                                googleCalendar.createEvent( summary, eventDate, debug, refresh );
+                                var eventDate = parsed[ 0 ].start.date();
+                                var config = vscode.workspace.getConfiguration( 'calendar' );
+
+                                if( config.get( 'google.enabled' ) )
+                                {
+                                    googleCalendar.createEvent( summary, eventDate, debug, function( message )
+                                    {
+                                        vscode.window.showInformationMessage( message );
+                                        refresh();
+                                    } );
+                                }
+                            }
+                            else
+                            {
+                                vscode.window.showErrorMessage( "Failed to parse date and time" );
                             }
                         }
                     } );
@@ -311,7 +341,7 @@ function activate( context )
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.editEvent', function( e )
         {
             vscode.window.showInputBox( {
-                prompt: "Please modify the event description",
+                prompt: "Please modify the event description, if required",
                 value: e.event.summary
             } ).then( function( summary )
             {
@@ -324,20 +354,48 @@ function activate( context )
                     {
                         originalText += ' ' + originalDateTime.toLocaleTimeString();
                     }
+
+                    var status = vscode.window.createStatusBarItem();
+                    status.text = "Updating event...";
+                    status.show();
+
                     vscode.window.showInputBox( {
                         prompt: "Please update the date and time of the event",
                         value: originalText,
-                        placeHolder: "E.g., Tomorrow at 6.30pm"
+                        placeHolder: "E.g., Tomorrow at 6.30pm",
+                        validateInput: function( value )
+                        {
+                            var parsed = chrono.parse( value, new Date(), { forwardDate: true } );
+                            if( parsed.length > 0 )
+                            {
+                                status.text = "Updating event to " + parsed[ 0 ].start.date().toLocaleString();
+                                return "";
+                            }
+                            status.text = "Updating event...";
+                            return "Date and time not understood (yet)";
+                        }
                     } ).then( function( dateTime )
                     {
+                        status.dispose();
                         if( dateTime !== undefined )
                         {
                             var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
-                            var eventDate = parsed[ 0 ].start.date();
-
-                            if( e.source === GOOGLE )
+                            if( parsed.length > 0 )
                             {
-                                googleCalendar.editEvent( e.event.id, summary, eventDate, debug, refresh );
+                                var eventDate = parsed[ 0 ].start.date();
+
+                                if( e.source === GOOGLE )
+                                {
+                                    googleCalendar.editEvent( e.event.id, summary, eventDate, debug, function( message )
+                                    {
+                                        vscode.window.showInformationMessage( message );
+                                        refresh();
+                                    } );
+                                }
+                            }
+                            else
+                            {
+                                vscode.window.showErrorMessage( "Failed to parse date and time" );
                             }
                         }
                     } );
@@ -353,7 +411,11 @@ function activate( context )
                 {
                     if( e.source === GOOGLE )
                     {
-                        googleCalendar.deleteEvent( e.event.id, debug, refresh );
+                        googleCalendar.deleteEvent( e.event.id, debug, function( message )
+                        {
+                            vscode.window.showInformationMessage( message );
+                            refresh();
+                        } );
                     }
                 }
             } );

@@ -177,15 +177,7 @@ function createEvent( summary, dateTime, debug, callback )
         },
         function( error, event )
         {
-            if( error )
-            {
-                debug( 'Failed to create new event: ' + error );
-            }
-            else
-            {
-                debug( 'Event created' );
-                callback();
-            }
+            callback( error ? ( "Failed to create new event: " + error ) : "Event created" );
         }
     );
 }
@@ -212,15 +204,7 @@ function editEvent( eventId, summary, dateTime, debug, callback )
         },
         function( error, event )
         {
-            if( error )
-            {
-                debug( 'Failed to update event: ' + error );
-            }
-            else
-            {
-                debug( 'Event updated' );
-                callback();
-            }
+            callback( error ? ( "Failed to update event: " + error ) : "Event updated" );
         }
     );
 
@@ -238,15 +222,7 @@ function deleteEvent( eventId, debug, callback )
         },
         function( error, event )
         {
-            if( error )
-            {
-                debug( 'Failed to delete event: ' + error );
-            }
-            else
-            {
-                debug( 'Event deleted' );
-                callback();
-            }
+            callback( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
         }
     );
 }
