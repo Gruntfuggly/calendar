@@ -129,9 +129,16 @@ function fetch( propulateTree, context, debug )
         var configuration = vscode.workspace.getConfiguration( 'calendar' );
 
         var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+        var from = new Date();
+        var historicDays = configuration.get( 'historicDays', 0 );
+        if( historicDays > 0 )
+        {
+            from.setDate( from.getDate() - historicDays );
+        }
+
         calendar.events.list( {
             calendarId: 'primary',
-            timeMin: ( new Date() ).toISOString(),
+            timeMin: from.toISOString(),
             maxResults: configuration.get( 'maxEvents' ),
             singleEvents: true,
             orderBy: 'startTime',

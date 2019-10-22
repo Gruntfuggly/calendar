@@ -2,13 +2,20 @@
     "name": "calendar",
     "displayName": "Calendar",
     "icon": "resources/calendar.png",
-    "description": "A VSCode extension to view and create upcoming calendar appointments",
+    "description": "A VSCode extension to view and manage upcoming calendar appointments",
     "version": "0.0.1",
     "publisher": "Gruntfuggly",
     "repository": "https://github.com/Gruntfuggly/calendar",
     "engines": {
         "vscode": "^1.5.0"
     },
+    "preview": true,
+    "keywords": [
+        "calendar",
+        "google",
+        "outlook",
+        "events"
+    ],
     "categories": [
         "Other"
     ],
@@ -204,35 +211,15 @@
                     "markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
                     "default": true
                 },
-                "calendar.google.enabled": {
-                    "type": "boolean",
-                    "default": true,
-                    "markdownDescription": "If true, fetch your events from your google calendar"
-                },
-                "calendar.google.credentialsFile": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
-                },
-                "calendar.outlook.enabled": {
-                    "type": "boolean",
-                    "default": true,
-                    "markdownDescription": "If true, fetch your events from your google calendar"
-                },
-                "calendar.outlook.clientId": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "Client ID - see TBD"
-                },
-                "calendar.outlook.clientSecret": {
-                    "type": "string",
-                    "default": "",
-                    "markdownDescription": "Client secret - see TBD"
-                },
                 "calendar.maxEvents": {
                     "type": "integer",
                     "default": 10,
                     "markdownDescription": "Maximum number of future events to fetch from your calendar"
+                },
+                "calendar.historicDays": {
+                    "type": "integer",
+                    "default": 0,
+                    "markdownDescription": "Number of days back to fetch past events"
                 },
                 "calendar.showRelativeDates": {
                     "type": "boolean",
@@ -258,6 +245,31 @@
                     "type": "boolean",
                     "default": true,
                     "markdownDescription": "Set to false to allow reminders to close automatically after a short period of time."
+                },
+                "calendar.google.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "If true, fetch your events from your google calendar"
+                },
+                "calendar.google.credentialsFile": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
+                },
+                "calendar.outlook.enabled": {
+                    "type": "boolean",
+                    "default": "If true, reminders for all day events occurring today and tomorrow will be shown.",
+                    "markdownDescription": "If true, fetch your events from your google calendar"
+                },
+                "calendar.outlook.clientId": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client ID - see TBD"
+                },
+                "calendar.outlook.clientSecret": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client secret - see TBD"
                 }
             }
         }

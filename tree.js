@@ -99,6 +99,12 @@ class CalendarDataProvider
 
         treeItem.collapsibleState = vscode.TreeItemCollapsibleState.None;
 
+        if( node.isPast )
+        {
+            treeItem.label = "";
+            treeItem.description = node.label;
+        }
+
         if( node.icon )
         {
             treeItem.iconPath = this.getIcon( node.icon );
@@ -145,9 +151,10 @@ class CalendarDataProvider
             return node.date === this;
         }
 
+        var now = new Date();
         var isAllDay = event.start.date !== undefined;
         var startDate = new Date( isAllDay ? event.start.date : event.start.dateTime );
-        var multipleDays = event.end.date && utils.daysBetween( new Date( event.end.date ), startDate ) > 1;
+        var multipleDays = event.end.date && utils.daysFrom( startDate, new Date( event.end.date ) ) > 1;
 
         var dateNode = dateNodes.find( findDate, startDate.withoutTime().toISOString() );
 
@@ -160,7 +167,8 @@ class CalendarDataProvider
                 label: utils.dateLabel( startDate ),
                 nodes: [],
                 visible: true,
-                icon: 'calendar'
+                icon: 'calendar',
+                isPast: startDate.withoutTime() < now.withoutTime()
             };
 
             if( multipleDays === true )
@@ -189,7 +197,8 @@ class CalendarDataProvider
             visible: true,
             icon: isAllDay ? 'calendar' : 'time',
             contextValue: 'canEdit canDelete',
-            source: source
+            source: source,
+            isPast: startDate.getTime() < now.getTime()
         };
 
         var icons = [

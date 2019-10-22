@@ -451,6 +451,8 @@ function activate( context )
                 else if(
                     e.affectsConfiguration( 'calendar.google.credentialsFile' ) ||
                     e.affectsConfiguration( 'calendar.maxEvents' ) ||
+                    e.affectsConfiguration( 'calendar.historicDays' ) ||
+                    e.affectsConfiguration( 'calendar.reminderInterval' ) ||
                     e.affectsConfiguration( 'calendar.showRelativeDates' ) )
                 {
                     refresh();

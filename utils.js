@@ -7,7 +7,7 @@ Date.prototype.withoutTime = function()
     return d;
 };
 
-function daysBetween( startDate, endDate )
+function daysFrom( startDate, endDate )
 {
     // Original function by https://stackoverflow.com/users/2596252/rmcmullan
 
@@ -19,13 +19,20 @@ function daysBetween( startDate, endDate )
     var end = Date.UTC( startDate.getFullYear(), startDate.getMonth(), startDate.getDate() );
 
     // so it's safe to divide by 24 hours
-    return Math.abs( ( start - end ) / ONE_DAY );
+    return ( start - end ) / ONE_DAY;
 }
 
 function isToday( date )
 {
     var today = new Date().withoutTime();
     return date.withoutTime().getTime() === today.getTime();
+}
+
+function isYesterday( date )
+{
+    var today = new Date().withoutTime();
+    var yesterday = new Date( today.getFullYear(), today.getMonth(), today.getDate() - 1 );
+    return date.withoutTime().getTime() === yesterday.getTime();
 }
 
 function isTomorrow( date )
@@ -54,7 +61,17 @@ function dateLabel( date )
 
     if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showRelativeDates' ) )
     {
-        if( isToday( date ) )
+        var difference = daysFrom( today, targetDate );
+
+        if( isYesterday( date ) )
+        {
+            return "Yesterday";
+        }
+        else if( difference < 0 )
+        {
+            return "Last " + date.toLocaleString( vscode.env.language, { weekday: 'long' } );
+        }
+        else if( isToday( date ) )
         {
             return "Today";
         }
@@ -62,17 +79,16 @@ function dateLabel( date )
         {
             return "Tomorrow";
         }
-        else if( daysBetween( targetDate, today ) < 8 )
+        else if( difference < 8 )
         {
-            var options = { weekday: 'long' };
-            return date.toLocaleString( vscode.env.language, options );
+            return date.toLocaleString( vscode.env.language, { weekday: 'long' } );
         }
     }
 
     return fullDateLabel( date );
 }
 
-module.exports.daysBetween = daysBetween;
+module.exports.daysFrom = daysFrom;
 module.exports.isToday = isToday;
 module.exports.isTomorrow = isTomorrow;
 module.exports.fullDateLabel = fullDateLabel;

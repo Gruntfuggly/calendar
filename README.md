@@ -5,15 +5,16 @@
 Shows your upcoming events from your Google calendar in a tree view inside VSCode. Also allows simple
 events to be created, modified and deleted.
 
+*This extension is currently in development - it will be updated often and things may break occasionally.*
+
 ## TODO
 
-- [ ] Support for showing some historic events
+- [ ] Prevent showing the same notifications repeatedly
 - [ ] Support for adding all-day events
 - [ ] Support for adding/editing multi-day events
+- [ ] Support for editting locations
+- [ ] Support for editting reminders
 - [ ] Support for Outlook calendars
-- [ ] Support for locations
-- [ ] Support for reminders
-- [ ] Prevent showing the same notifications repeatedly
 
 ## Installing
 
@@ -47,16 +48,18 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 
 | Setting                               | Default | Description                                                                                                     |
 |---------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------|
-| calendar.debug                        | false   | Enable a debug channel in the output view                                                                       |
-| calendar.showInExplorer               |         | If true, show the view in the explorer                                                                          |
-| calendar.maxEvents                    | 10      | Maximum number of future events to fetch from your calendar                                                     |
+| calendar.debug                        | false   | Enable a debug channel in the output view.                                                                      |
+| calendar.showInExplorer               | true    | If true, show the view in the explorer view.                                                                    |
+| calendar.maxEvents                    | 10      | Maximum number of future events to fetch from your calendar.                                                    |
+| calendar.historicDays                 | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                         |
 | calendar.showRelativeDates            | true    | Set to false to show full dates instead of **Today**, **Tomorrow**, etc.                                        |
-| calendar.google.enabled               | true    | Set to true to enable google calendar integration                                                               |
-| calendar.google.credentialsFile       |         | Path to your credentials file                                                                                   |
-| calendar.outlook.enabled              | false   | Set to true to enable outlook calendar integration                                                              |
 | calendar.autoRefreshInterval          | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing. |
 | calendar.reminderInterval             | 60      | The number of minutes prior to an event to show a reminder. Set to zero to disable reminders.                   |
 | calendar.showAllDayRemindersAtStartup | true    | If true, reminders for all day events occurring today and tomorrow will be shown.                               |
+| calendar.stickyReminders              | true    | Set to false to allow reminders to close automatically after a short period of time.                            |
+| calendar.google.enabled               | true    | Set to true to enable google calendar integration.                                                              |
+| calendar.google.credentialsFile       |         | Path to your credentials file.                                                                                  |
+| calendar.outlook.enabled              | false   | Set to true to enable outlook calendar integration.                                                             |
 <!--
 | calendar.outlook.clientId     | | Your client ID for your outlook calendar     |
 | calendar.outlook.clientSecret | | Your client secret for your outlook calendar |
