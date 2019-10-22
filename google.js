@@ -203,7 +203,7 @@ function editEvent( eventId, summary, dateTime, debug, callback )
         }
     };
 
-    calendar.events.insert(
+    calendar.events.update(
         {
             auth: oAuth2Client,
             calendarId: 'primary',
@@ -240,7 +240,7 @@ function deleteEvent( eventId, debug, callback )
         {
             if( error )
             {
-                console.log( 'Failed to delete event: ' + error );
+                debug( 'Failed to delete event: ' + error );
             }
             else
             {
