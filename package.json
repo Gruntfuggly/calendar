@@ -178,6 +178,16 @@
                     "dark": "resources/icons/dark/trash.svg",
                     "light": "resources/icons/light/trash.svg"
                 }
+            },
+            {
+                "command": "calendar.setLocation",
+                "title": "Set location",
+                "category": "Calendar"
+            },
+            {
+                "command": "calendar.setReminder",
+                "title": "Set reminder",
+                "category": "Calendar"
             }
         ],
         "configuration": {

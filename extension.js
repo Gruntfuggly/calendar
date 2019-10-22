@@ -359,6 +359,14 @@ function activate( context )
             } );
         } ) );
 
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setLocation', function( e )
+        {
+        } ) );
+
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setReminder', function( e )
+        {
+        } ) );
+
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.clearFilter', clearFilter ) );
 
         context.subscriptions.push( calendarViewExplorer.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element.date, true ); } ) );

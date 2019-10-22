@@ -5,7 +5,14 @@
 Shows your upcoming events from your Google calendar in a tree view inside VSCode. Also allows simple
 events to be created, modified and deleted.
 
-Support for Outlook calendars is in the pipeline.
+## TODO
+
+- [ ] Support for adding all-day events
+- [ ] Support for adding/editing multi-day events
+- [ ] Support for Outlook calendars
+- [ ] Support for locations
+- [ ] Support for reminders
+- [ ] Prevent showing the same notifications repeatedly
 
 ## Installing
 
