@@ -243,6 +243,11 @@
                     "type": "boolean",
                     "default": true,
                     "markdownDescription": "If true, reminders for all day events occurring today and tomorrow will be shown."
+                },
+                "calendar.stickyReminders": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Set to false to allow reminders to close automatically after a short period of time."
                 }
             }
         }

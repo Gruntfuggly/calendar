@@ -8,11 +8,11 @@ var utils = require( './utils' );
 
 var GOOGLE = 'GOOGLE';
 var OUTLOOK = 'OUTLOOK';
-
 function activate( context )
 {
     var refreshTimer;
     var outputChannel;
+    var reminders = {};
 
     var allDayRemindersShown = false;
 
@@ -69,7 +69,58 @@ function activate( context )
                     if( isToday || utils.isTomorrow( date ) )
                     {
                         var label = isToday ? "Today" : "Tomorrow";
-                        vscode.window.showInformationMessage( label + ": " + event.summary );
+                        if( vscode.workspace.getConfiguration( 'calendar' ).get( 'stickyReminders' ) )
+                        {
+                            vscode.window.showErrorMessage( label + ": " + event.summary, "OK" );
+                        }
+                        else
+                        {
+                            vscode.window.showInformationMessage( label + ": " + event.summary );
+                        }
+                    }
+                }
+            } );
+        }
+        allDayRemindersShown = true;
+    }
+
+    function showReminders( events )
+    {
+        var reminderInterval = vscode.workspace.getConfiguration( 'calendar' ).get( 'reminderInterval', 0 );
+
+        if( reminderInterval > 0 )
+        {
+            events.map( function( event )
+            {
+                if( !googleCalendar.isAllDay( event ) )
+                {
+                    var reminderTime = new Date( event.start.dateTime ).getTime() - ( reminderInterval * 60000 );
+                    var now = new Date();
+                    var millisecondsUntilReminder = reminderTime - now.getTime();
+                    if( millisecondsUntilReminder > ( -reminderInterval * 60000 ) && millisecondsUntilReminder < 86400000 )
+                    {
+                        if( reminders[ event.id ] !== undefined )
+                        {
+                            clearTimeout( reminders[ event.id ] );
+                        }
+                        if( millisecondsUntilReminder > 0 )
+                        {
+                            debug( "Scheduling reminder for " + event.summary + " in " + ( millisecondsUntilReminder / 60000 ).toFixed( 1 ) + " minutes" );
+                        }
+                        reminders[ event.id ] = setTimeout( function( event )
+                        {
+                            debug( "Showing notification for " + event.summary );
+                            var eventTime = new Date( event.start.dateTime );
+                            var text = eventTime.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) + ": " + event.summary;
+                            if( vscode.workspace.getConfiguration( 'calendar' ).get( 'stickyReminders' ) )
+                            {
+                                vscode.window.showErrorMessage( text, "OK" );
+                            }
+                            else
+                            {
+                                vscode.window.showInformationMessage( text );
+                            }
+                        }, millisecondsUntilReminder, event );
                     }
                 }
             } );
@@ -95,6 +146,7 @@ function activate( context )
                 {
                     showAllDayReminders( events );
                 }
+                showReminders( events );
             }, context, debug );
         }
 
@@ -215,6 +267,10 @@ function activate( context )
             context.workspaceState.update( 'calendar.expandedNodes', undefined );
 
             // purgeFolder( context.globalStoragePath );
+
+            debug( "Cache cleared" );
+
+            refresh();
         } ) );
 
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.search', function()
@@ -278,6 +334,7 @@ function activate( context )
                         {
                             var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
                             var eventDate = parsed[ 0 ].start.date();
+
                             if( e.source === GOOGLE )
                             {
                                 googleCalendar.editEvent( e.event.id, summary, eventDate, debug, refresh );
