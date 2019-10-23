@@ -168,12 +168,13 @@ class CalendarDataProvider
                 nodes: [],
                 visible: true,
                 icon: 'calendar',
-                isPast: startDate.withoutTime() < now.withoutTime()
+                isPast: startDate.withoutTime() < now.withoutTime(),
+                tooltip: utils.fullDateLabel( startDate, true )
             };
 
             if( multipleDays === true )
             {
-                dateNode.label += " until " + utils.dateLabel( new Date( event.end.date ) );
+                dateNode.label += " until " + utils.dateLabel( ( new Date( event.end.date ) ).addDays( -1 ) );
             }
 
             dateNodes.push( dateNode );

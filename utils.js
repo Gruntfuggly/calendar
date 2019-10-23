@@ -7,6 +7,13 @@ Date.prototype.withoutTime = function()
     return d;
 };
 
+Date.prototype.addDays = function( days )
+{
+    var date = new Date( this.valueOf() );
+    date.setDate( date.getDate() + days );
+    return date;
+}
+
 function daysFrom( startDate, endDate )
 {
     // Original function by https://stackoverflow.com/users/2596252/rmcmullan
@@ -42,16 +49,14 @@ function isTomorrow( date )
     return date.withoutTime().getTime() === tomorrow.getTime();
 }
 
-function fullDateLabel( date )
+function fullDateLabel( date, withYear )
 {
     var targetDate = date.withoutTime();
     var today = new Date().withoutTime();
 
-    var withoutYear = { weekday: 'long', month: 'long', day: 'numeric' };
-    var withYear = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return targetDate.getYear() == today.getYear() ?
-        date.toLocaleString( vscode.env.language, withoutYear )
-        : date.toLocaleString( vscode.env.language, withYear );
+    var withoutYearFormat = { weekday: 'long', month: 'long', day: 'numeric' };
+    var withYearFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleString( vscode.env.language, ( targetDate.getYear() !== today.getYear() || withYear ) ? withYearFormat : withoutYearFormat );
 }
 
 function dateLabel( date )

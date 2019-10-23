@@ -10,6 +10,38 @@ var GOOGLE = 'GOOGLE';
 var OUTLOOK = 'OUTLOOK';
 var OK = 'OK';
 
+function isAllDay( parsedDateTime )
+{
+    return parsedDateTime.length > 0 && Object.keys( parsedDateTime[ 0 ].tags ).filter( function( tag )
+    {
+        return tag.match( /time/i );
+    } ).length === 0;
+}
+
+function isMultipleDays( parsedDateTime )
+{
+    return parsedDateTime.length > 1;
+}
+
+function showHint( type, parsedDateTime, status )
+{
+    var hint;
+    var multipleDays = isMultipleDays( parsedDateTime );
+    if( isAllDay( parsedDateTime ) )
+    {
+        hint = type + " all-day event " + ( multipleDays ? "from " : "on " ) + parsedDateTime[ 0 ].start.date().toLocaleDateString( vscode.env.language );
+    }
+    else
+    {
+        hint = type + " event at " + parsedDateTime[ 0 ].start.date().toLocaleString( vscode.env.language );
+    }
+    if( multipleDays )
+    {
+        hint += " until " + parsedDateTime[ 1 ].start.date().toLocaleDateString( vscode.env.language );
+    }
+    status.text = hint;
+}
+
 function activate( context )
 {
     var refreshTimer;
@@ -257,6 +289,44 @@ function activate( context )
         setButtons();
     }
 
+    function getEventDateAndTime( prompt, type, callback )
+    {
+        var status = vscode.window.createStatusBarItem();
+        status.text = type + " event...";
+        status.show();
+
+        vscode.window.showInputBox( {
+            prompt: prompt,
+            placeHolder: "E.g., Tomorrow at 6.30pm",
+            validateInput: function( value )
+            {
+                var parsedDateTime = chrono.parse( value, new Date(), { forwardDate: true } );
+                if( parsedDateTime.length > 0 )
+                {
+                    showHint( type, parsedDateTime, status );
+                    return "";
+                }
+                status.text = type + " event...";
+                return "Date and time not understood (yet)";
+            }
+        } ).then( function( dateTime )
+        {
+            status.dispose();
+            if( dateTime !== undefined )
+            {
+                var parsedDateTime = chrono.parse( dateTime, new Date(), { forwardDate: true } );
+                if( parsedDateTime.length > 0 )
+                {
+                    callback( parsedDateTime );
+                }
+                else
+                {
+                    vscode.window.showErrorMessage( "Failed to parse date and time" );
+                }
+            }
+        } );
+    }
+
     function register()
     {
         vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
@@ -315,59 +385,19 @@ function activate( context )
             {
                 if( summary )
                 {
-                    var status = vscode.window.createStatusBarItem();
-                    status.text = "Creating event...";
-                    status.show();
-
-                    vscode.window.showInputBox( {
-                        prompt: "Please enter the date and time of the event",
-                        placeHolder: "E.g., Tomorrow at 6.30pm",
-                        validateInput: function( value )
-                        {
-                            var parsed = chrono.parse( value, new Date(), { forwardDate: true } );
-                            if( parsed.length > 0 )
-                            {
-                                var isAllDay = Object.keys( parsed[ 0 ].tags ).filter( function( tag )
-                                {
-                                    return tag.match( /time/i );
-                                } ).length === 0;
-                                if( isAllDay )
-                                {
-                                    status.text = "Creating event on " + parsed[ 0 ].start.date().toLocaleDateString( vscode.env.language );
-                                }
-                                else
-                                {
-                                    status.text = "Creating event at " + parsed[ 0 ].start.date().toLocaleString( vscode.env.language );
-                                }
-                                return "";
-                            }
-                            status.text = "Creating event...";
-                            return "Date and time not understood (yet)";
-                        }
-                    } ).then( function( dateTime )
+                    getEventDateAndTime( "Please enter the date and time of the event", "Creating", function( parsedDateTime )
                     {
-                        status.dispose();
-                        if( dateTime !== undefined )
-                        {
-                            var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
-                            if( parsed.length > 0 )
-                            {
-                                var eventDate = parsed[ 0 ].start.date();
-                                var config = vscode.workspace.getConfiguration( 'calendar' );
+                        var config = vscode.workspace.getConfiguration( 'calendar' );
 
-                                if( config.get( 'google.enabled' ) )
-                                {
-                                    googleCalendar.createEvent( summary, eventDate, debug, function( message )
-                                    {
-                                        vscode.window.showInformationMessage( message );
-                                        refresh();
-                                    } );
-                                }
-                            }
-                            else
-                            {
-                                vscode.window.showErrorMessage( "Failed to parse date and time" );
-                            }
+                        var eventDateTime = {
+                            start: parsedDateTime[ 0 ].start.date(),
+                            allDay: isAllDay( parsedDateTime ),
+                            end: parsedDateTime.length > 1 ? parsedDateTime[ 1 ].start.date() : undefined
+                        };
+
+                        if( config.get( 'google.enabled' ) )
+                        {
+                            googleCalendar.createEvent( refresh, summary, eventDateTime );
                         }
                     } );
                 }
@@ -383,56 +413,17 @@ function activate( context )
             {
                 if( summary )
                 {
-                    var isAllDay = e.event.start.date !== undefined;
-                    var originalDateTime = new Date( isAllDay ? e.event.start.date : e.event.start.dateTime );
-                    var originalText = utils.dateLabel( originalDateTime );
-                    if( !isAllDay )
+                    getEventDateAndTime( "Please update the date and time of the event", "Updating", function( eventDate )
                     {
-                        originalText += ' ' + originalDateTime.toLocaleTimeString();
-                    }
-
-                    var status = vscode.window.createStatusBarItem();
-                    status.text = "Updating event...";
-                    status.show();
-
-                    vscode.window.showInputBox( {
-                        prompt: "Please update the date and time of the event",
-                        value: originalText,
-                        placeHolder: "E.g., Tomorrow at 6.30pm",
-                        validateInput: function( value )
+                        if( e.source === GOOGLE )
                         {
-                            var parsed = chrono.parse( value, new Date(), { forwardDate: true } );
-                            if( parsed.length > 0 )
-                            {
-                                status.text = "Updating event to " + parsed[ 0 ].start.date().toLocaleString();
-                                return "";
-                            }
-                            status.text = "Updating event...";
-                            return "Date and time not understood (yet)";
-                        }
-                    } ).then( function( dateTime )
-                    {
-                        status.dispose();
-                        if( dateTime !== undefined )
-                        {
-                            var parsed = chrono.parse( dateTime, new Date(), { forwardDate: true } );
-                            if( parsed.length > 0 )
-                            {
-                                var eventDate = parsed[ 0 ].start.date();
+                            var eventDateTime = {
+                                start: parsedDateTime[ 0 ].start.date(),
+                                allDay: isAllDay( parsedDateTime ),
+                                end: parsedDateTime.length > 1 ? parsedDateTime[ 1 ].start.date() : undefined
+                            };
 
-                                if( e.source === GOOGLE )
-                                {
-                                    googleCalendar.editEvent( e.event.id, summary, eventDate, debug, function( message )
-                                    {
-                                        vscode.window.showInformationMessage( message );
-                                        refresh();
-                                    } );
-                                }
-                            }
-                            else
-                            {
-                                vscode.window.showErrorMessage( "Failed to parse date and time" );
-                            }
+                            googleCalendar.editEvent( refresh, e.event.id, summary, eventDateTime );
                         }
                     } );
                 }
@@ -447,11 +438,7 @@ function activate( context )
                 {
                     if( e.source === GOOGLE )
                     {
-                        googleCalendar.deleteEvent( e.event.id, debug, function( message )
-                        {
-                            vscode.window.showInformationMessage( message );
-                            refresh();
-                        } );
+                        googleCalendar.deleteEvent( refresh, e.event.id );
                     }
                 }
             } );

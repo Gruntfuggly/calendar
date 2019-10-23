@@ -8,7 +8,7 @@ var ENTER_CODE = "Enter Authorization Code";
 
 var oAuth2Client;
 
-function fetch( propulateTree, context, debug )
+function fetch( populateTree, context, debug )
 {
     var configuration = vscode.workspace.getConfiguration( 'calendar' );
     var credentialsFile = configuration.get( 'google.credentialsFile' );
@@ -150,7 +150,7 @@ function fetch( propulateTree, context, debug )
             }
             else
             {
-                propulateTree( results.data.items );
+                populateTree( results.data.items );
             }
         } );
     }
@@ -161,21 +161,47 @@ function isAllDay( event )
     return event.start.date !== undefined;
 }
 
-function createEvent( summary, dateTime, debug, callback )
+function toISODate( date )
 {
-    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
-    var event = {
-        summary: summary,
-        // location: '800 Howard St., San Francisco, CA 94103',
-        // description: "A chance to hear more about Google's developer products.",
-        start: {
-            dateTime: dateTime
-        },
-        end: {
-            dateTime: dateTime
-        }
-    };
+    var offset = date.getTimezoneOffset();
+    var adjustedDate = new Date( date.getTime() + ( offset * 60 * 1000 ) );
+    return adjustedDate.toISOString().split( 'T' )[ 0 ];
+}
 
+function createEvent( callback, summary, eventDateTime )
+{
+    console.log( JSON.stringify( eventDateTime ) );
+    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+    var event;
+
+    if( eventDateTime.allDay )
+    {
+        event = {
+            summary: summary,
+            // location: '800 Howard St., San Francisco, CA 94103',
+            // description: "A chance to hear more about Google's developer products.",
+            start: {
+                date: toISODate( eventDateTime.start )
+            },
+            end: {
+                date: toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) )
+            }
+        };
+    }
+    else
+    {
+        event = {
+            summary: summary,
+            start: {
+                dateTime: eventDateTime
+            },
+            end: {
+                dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start
+            }
+        };
+    }
+
+    console.log( JSON.stringify( event, null, 2 ) );
     calendar.events.insert(
         {
             auth: oAuth2Client,
@@ -184,12 +210,14 @@ function createEvent( summary, dateTime, debug, callback )
         },
         function( error, event )
         {
-            callback( error ? ( "Failed to create new event: " + error ) : "Event created" );
+            console.log( JSON.stringify( event ) );
+            vscode.window.showInformationMessage( error ? ( "Failed to create new event: " + error ) : "Event created" );
+            callback();
         }
     );
 }
 
-function editEvent( eventId, summary, dateTime, debug, callback )
+function editEvent( callback, eventId, summary, dateTime )
 {
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
     var event = {
@@ -211,13 +239,14 @@ function editEvent( eventId, summary, dateTime, debug, callback )
         },
         function( error, event )
         {
-            callback( error ? ( "Failed to update event: " + error ) : "Event updated" );
+            vscode.window.showInformationMessage( error ? ( "Failed to update event: " + error ) : "Event updated" );
+            callback();
         }
     );
 
 }
 
-function deleteEvent( eventId, debug, callback )
+function deleteEvent( callback, eventId )
 {
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
 
@@ -229,7 +258,8 @@ function deleteEvent( eventId, debug, callback )
         },
         function( error, event )
         {
-            callback( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
+            vscode.window.showInformationMessage( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
+            callback();
         }
     );
 }
