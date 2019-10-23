@@ -73,6 +73,7 @@ function activate( context )
         if( vscode.workspace.getConfiguration( 'calendar' ).debug === true )
         {
             outputChannel = vscode.window.createOutputChannel( "Calendar" );
+            googleCalendar.init( debug );
             debug( "Ready" );
         }
     }
@@ -204,7 +205,8 @@ function activate( context )
                     showAllDayReminders( events );
                 }
                 showReminders( events );
-            }, context, debug );
+                debug( "Ready" );
+            }, context );
         }
 
         if( config.get( 'outlook.enabled' ) )
@@ -215,7 +217,7 @@ function activate( context )
 
             outlookCalendar.fetch( function( events )
             {
-            }, context, debug );
+            }, context );
         }
     }
 
@@ -389,11 +391,19 @@ function activate( context )
                     {
                         var config = vscode.workspace.getConfiguration( 'calendar' );
 
+                        debug( "parsed date and time: " + JSON.stringify( parsedDateTime, null, 2 ) );
                         var eventDateTime = {
                             start: parsedDateTime[ 0 ].start.date(),
-                            allDay: isAllDay( parsedDateTime ),
-                            end: parsedDateTime.length > 1 ? parsedDateTime[ 1 ].start.date() : undefined
+                            allDay: isAllDay( parsedDateTime )
                         };
+                        if( parsedDateTime[ 0 ].end )
+                        {
+                            eventDateTime.end = parsedDateTime[ 0 ].end.date();
+                        }
+                        else if( parsedDateTime.length > 1 )
+                        {
+                            eventDateTime.end = parsedDateTime[ 1 ].start.date();
+                        }
 
                         if( config.get( 'google.enabled' ) )
                         {

@@ -8,7 +8,19 @@ var ENTER_CODE = "Enter Authorization Code";
 
 var oAuth2Client;
 
-function fetch( populateTree, context, debug )
+var defaultDebug = function( text )
+{
+    console.log( text );
+};
+
+var debug = defaultDebug;
+
+function init( _debug )
+{
+    debug = _debug === undefined ? defaultDebug : _debug;
+}
+
+function fetch( populateTree, context )
 {
     var configuration = vscode.workspace.getConfiguration( 'calendar' );
     var credentialsFile = configuration.get( 'google.credentialsFile' );
@@ -23,7 +35,7 @@ function fetch( populateTree, context, debug )
         {
             if( button === OPEN_SETTINGS )
             {
-                vscode.commands.executeCommand( 'workbench.action.openSettings', 'calendar.google.credentialsFile' ); 1
+                vscode.commands.executeCommand( 'workbench.action.openSettings', 'calendar.google.credentialsFile' );
             }
         } );
     }
@@ -170,7 +182,7 @@ function toISODate( date )
 
 function createEvent( callback, summary, eventDateTime )
 {
-    console.log( JSON.stringify( eventDateTime ) );
+    debug( "eventDateTime: " + JSON.stringify( eventDateTime ) );
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
     var event;
 
@@ -193,7 +205,7 @@ function createEvent( callback, summary, eventDateTime )
         event = {
             summary: summary,
             start: {
-                dateTime: eventDateTime
+                dateTime: eventDateTime.start
             },
             end: {
                 dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start
@@ -201,7 +213,7 @@ function createEvent( callback, summary, eventDateTime )
         };
     }
 
-    console.log( JSON.stringify( event, null, 2 ) );
+    debug( "event: " + JSON.stringify( event, null, 2 ) );
     calendar.events.insert(
         {
             auth: oAuth2Client,
@@ -210,9 +222,12 @@ function createEvent( callback, summary, eventDateTime )
         },
         function( error, event )
         {
-            console.log( JSON.stringify( event ) );
             vscode.window.showInformationMessage( error ? ( "Failed to create new event: " + error ) : "Event created" );
-            callback();
+            debug( "createEvent result: " + ( error ? error : JSON.stringify( event ) ) );
+            if( !error )
+            {
+                callback();
+            }
         }
     );
 }
@@ -240,7 +255,11 @@ function editEvent( callback, eventId, summary, dateTime )
         function( error, event )
         {
             vscode.window.showInformationMessage( error ? ( "Failed to update event: " + error ) : "Event updated" );
-            callback();
+            debug( "updateEvent result: " + ( error ? error : JSON.stringify( event ) ) );
+            if( !error )
+            {
+                callback();
+            }
         }
     );
 
@@ -259,11 +278,16 @@ function deleteEvent( callback, eventId )
         function( error, event )
         {
             vscode.window.showInformationMessage( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
-            callback();
+            debug( "deleteEvent result: " + ( error ? error : JSON.stringify( event ) ) );
+            if( !error )
+            {
+                callback();
+            }
         }
     );
 }
 
+module.exports.init = init;
 module.exports.fetch = fetch;
 module.exports.isAllDay = isAllDay;
 module.exports.createEvent = createEvent;

@@ -187,10 +187,24 @@ class CalendarDataProvider
             tooltip += ( tooltip.trim().length > 0 ? '\n' : '' ) + event.description;
         }
 
+        var label = ( !isAllDay ? startDate.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) : '' );
+
+        if( !isAllDay && event.end && event.end.dateTime != event.start.dateTime )
+        {
+            label += " to " + new Date( event.end.dateTime ).toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } );
+        }
+
+        if( label.length > 0 )
+        {
+            label += ', ';
+        }
+
+        label += event.summary;
+
         var eventNode = {
             type: EVENT,
             event: event,
-            label: ( !isAllDay ? startDate.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) + ', ' : '' ) + event.summary,
+            label: label,
             id: ( buildCounter * 1000000 ) + nodeCounter++,
             date: startDate.withoutTime().toISOString(),
             url: event.htmlLink,
