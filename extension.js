@@ -18,27 +18,30 @@ function isAllDay( parsedDateTime )
     } ).length === 0;
 }
 
-function isMultipleDays( parsedDateTime )
-{
-    return parsedDateTime.length > 1;
-}
-
 function showHint( type, parsedDateTime, status )
 {
     var hint;
-    var multipleDays = isMultipleDays( parsedDateTime );
-    if( isAllDay( parsedDateTime ) )
+    var allDay = isAllDay( parsedDateTime );
+
+    console.log( JSON.stringify( parsedDateTime ) );
+    if( allDay )
     {
-        hint = type + " all-day event " + ( multipleDays ? "from " : "on " ) + parsedDateTime[ 0 ].start.date().toLocaleDateString( vscode.env.language );
+        hint = type + " all-day event " + ( parsedDateTime.length > 1 ? "from " : "on " ) + parsedDateTime[ 0 ].start.date().toLocaleDateString( utils.getLocale() );
     }
     else
     {
-        hint = type + " event at " + parsedDateTime[ 0 ].start.date().toLocaleString( vscode.env.language );
+        hint = type + " event at " + utils.formattedTime( parsedDateTime[ 0 ].start.date() ) + " on " + parsedDateTime[ 0 ].start.date().toLocaleDateString( utils.getLocale() );
     }
-    if( multipleDays )
+
+    if( parsedDateTime.length > 1 )
     {
-        hint += " until " + parsedDateTime[ 1 ].start.date().toLocaleDateString( vscode.env.language );
+        hint += " until " + parsedDateTime[ 1 ].start.date().toLocaleDateString( utils.getLocale() );
     }
+    else if( parsedDateTime[ 0 ].end )
+    {
+        hint += " until " + utils.formattedTime( parsedDateTime[ 0 ].end.date() );
+    }
+
     status.text = hint;
 }
 
@@ -78,6 +81,22 @@ function activate( context )
         }
     }
 
+    function purgeAcknowledgedReminders()
+    {
+        var now = new Date();
+        var acknowledgedReminders = context.globalState.get( 'calendar.google.acknowledgedReminders', {} );
+
+        Object.keys( acknowledgedReminders ).map( function( event )
+        {
+            if( utils.daysFrom( new Date( acknowledgedReminders[ event ] ), now ) > 30 )
+            {
+                debug( "Purging acknowledged reminder" );
+                delete acknowledgedReminders[ event ];
+            }
+        } );
+        context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
+    }
+
     function setAutoRefreshTimer()
     {
         debug( "setAutoRefreshTimer" );
@@ -113,7 +132,7 @@ function activate( context )
                                 {
                                     if( button === OK )
                                     {
-                                        acknowledgedReminders[ event.id ] = eventTime;
+                                        acknowledgedReminders[ event.id ] = date;
                                         context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
                                     }
                                 } );
@@ -160,7 +179,7 @@ function activate( context )
                             {
                                 debug( "Showing notification for " + event.summary );
                                 var eventTime = new Date( event.start.dateTime );
-                                var text = eventTime.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) + ": " + event.summary;
+                                var text = eventTime.toLocaleTimeString( utils.getLocale(), { hour: 'numeric', minute: 'numeric', hour12: true } ) + ": " + event.summary;
 
                                 if( vscode.workspace.getConfiguration( 'calendar' ).get( 'stickyReminders' ) )
                                 {
@@ -291,15 +310,12 @@ function activate( context )
         setButtons();
     }
 
-    function getEventDateAndTime( prompt, type, callback )
+    function getEventDateAndTime( callback, status, prompt, type, originalDateTimeText )
     {
-        var status = vscode.window.createStatusBarItem();
-        status.text = type + " event...";
-        status.show();
-
         vscode.window.showInputBox( {
             prompt: prompt,
             placeHolder: "E.g., Tomorrow at 6.30pm",
+            value: originalDateTimeText,
             validateInput: function( value )
             {
                 var parsedDateTime = chrono.parse( value, new Date(), { forwardDate: true } );
@@ -383,11 +399,15 @@ function activate( context )
 
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.createEvent', function()
         {
+            var status = vscode.window.createStatusBarItem();
+            status.text = "Creating event...";
+            status.show();
+
             vscode.window.showInputBox( { prompt: "Please enter an event description" } ).then( function( summary )
             {
                 if( summary )
                 {
-                    getEventDateAndTime( "Please enter the date and time of the event", "Creating", function( parsedDateTime )
+                    getEventDateAndTime( function( parsedDateTime )
                     {
                         var config = vscode.workspace.getConfiguration( 'calendar' );
 
@@ -409,13 +429,21 @@ function activate( context )
                         {
                             googleCalendar.createEvent( refresh, summary, eventDateTime );
                         }
-                    } );
+                    }, status, "Please enter the date and time of the event", "Creating" );
+                }
+                else
+                {
+                    status.dispose();
                 }
             } );
         } ) );
 
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.editEvent', function( e )
         {
+            var status = vscode.window.createStatusBarItem();
+            status.text = "Updating event...";
+            status.show();
+
             vscode.window.showInputBox( {
                 prompt: "Please modify the event description, if required",
                 value: e.event.summary
@@ -423,7 +451,19 @@ function activate( context )
             {
                 if( summary )
                 {
-                    getEventDateAndTime( "Please update the date and time of the event", "Updating", function( eventDate )
+                    var isAllDay = e.event.start.date !== undefined;
+                    var originalDateTime = new Date( isAllDay ? e.event.start.date : e.event.start.dateTime );
+                    var originalDateTimeText = utils.dateLabel( originalDateTime );
+                    if( !isAllDay )
+                    {
+                        originalDateTimeText += ' ' + originalDateTime.toLocaleTimeString( utils.getLocale() );
+                        if( e.event.end.dateTime !== e.event.start.dateTime )
+                        {
+                            originalDateTimeText += " until " + ( new Date( e.event.end.dateTime ) ).toLocaleTimeString( utils.getLocale() );
+                        }
+                    }
+
+                    getEventDateAndTime( function( parsedDateTime )
                     {
                         if( e.source === GOOGLE )
                         {
@@ -435,7 +475,11 @@ function activate( context )
 
                             googleCalendar.editEvent( refresh, e.event.id, summary, eventDateTime );
                         }
-                    } );
+                    }, status, "Please update the date and time of the event", "Updating", originalDateTimeText );
+                }
+                else
+                {
+                    status.dispose();
                 }
             } );
         } ) );
@@ -477,9 +521,17 @@ function activate( context )
                 {
                     resetOutputChannel();
                 }
+                else if( e.affectsConfiguration( "calendar.locale" ) )
+                {
+                    var locale = vscode.workspace.getConfiguration( 'calendar' ).get( 'locale' );
+                    if( locale !== undefined && locale.length > 0 && !locale.match( localeRegex ) )
+                    {
+                        vscode.window.showErrorMessage( "Invalid locale: " + locale );
+                    }
+                }
                 else if( e.affectsConfiguration( 'calendar.autoRefreshInterval' ) )
                 {
-                    setAutoRefreshTimer()
+                    setAutoRefreshTimer();
                 }
                 else if(
                     e.affectsConfiguration( 'calendar.google.credentialsFile' ) ||
@@ -499,6 +551,7 @@ function activate( context )
         setButtons();
         fetch();
         setAutoRefreshTimer();
+        purgeAcknowledgedReminders();
     }
 
     register();

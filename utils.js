@@ -1,5 +1,17 @@
 var vscode = require( 'vscode' );
 
+var localeRegex = new RegExp( '^[a-z]{2}(\-[a-z]{2})*$', 'i' );
+
+function getLocale()
+{
+    var _locale = vscode.workspace.getConfiguration( 'calendar' ).get( 'locale', vscode.env.language );
+    if( _locale.match( localeRegex ) )
+    {
+        return _locale;
+    }
+    return vscode.env.language;
+}
+
 Date.prototype.withoutTime = function()
 {
     var d = new Date( this );
@@ -12,7 +24,7 @@ Date.prototype.addDays = function( days )
     var date = new Date( this.valueOf() );
     date.setDate( date.getDate() + days );
     return date;
-}
+};
 
 function daysFrom( startDate, endDate )
 {
@@ -56,7 +68,7 @@ function fullDateLabel( date, withYear )
 
     var withoutYearFormat = { weekday: 'long', month: 'long', day: 'numeric' };
     var withYearFormat = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleString( vscode.env.language, ( targetDate.getYear() !== today.getYear() || withYear ) ? withYearFormat : withoutYearFormat );
+    return date.toLocaleString( getLocale(), ( targetDate.getYear() !== today.getYear() || withYear ) ? withYearFormat : withoutYearFormat );
 }
 
 function dateLabel( date )
@@ -74,7 +86,7 @@ function dateLabel( date )
         }
         else if( difference < 0 )
         {
-            return "Last " + date.toLocaleString( vscode.env.language, { weekday: 'long' } );
+            return "Last " + date.toLocaleString( getLocale(), { weekday: 'long' } );
         }
         else if( isToday( date ) )
         {
@@ -86,15 +98,22 @@ function dateLabel( date )
         }
         else if( difference < 8 )
         {
-            return date.toLocaleString( vscode.env.language, { weekday: 'long' } );
+            return date.toLocaleString( getLocale(), { weekday: 'long' } );
         }
     }
 
     return fullDateLabel( date );
 }
 
+function formattedTime( date )
+{
+    return date.toLocaleTimeString( getLocale(), { hour: 'numeric', minute: 'numeric', hour12: true } )
+}
+
+module.exports.getLocale = getLocale;
 module.exports.daysFrom = daysFrom;
 module.exports.isToday = isToday;
 module.exports.isTomorrow = isTomorrow;
 module.exports.fullDateLabel = fullDateLabel;
 module.exports.dateLabel = dateLabel;
+module.exports.formattedTime = formattedTime;

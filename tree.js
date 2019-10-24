@@ -27,6 +27,11 @@ var sortByDate = function( a, b )
     return new Date( a.date ) - new Date( b.date );
 };
 
+function newNodeId()
+{
+    return ( buildCounter * 1000000 ) + nodeCounter++;
+}
+
 class CalendarDataProvider
 {
     constructor( _context, outputChannel )
@@ -163,7 +168,7 @@ class CalendarDataProvider
             dateNode = {
                 type: DATE,
                 date: startDate.withoutTime().toISOString(),
-                id: ( buildCounter * 1000000 ) + nodeCounter++,
+                id: newNodeId(),
                 label: utils.dateLabel( startDate ),
                 nodes: [],
                 visible: true,
@@ -187,11 +192,11 @@ class CalendarDataProvider
             tooltip += ( tooltip.trim().length > 0 ? '\n' : '' ) + event.description;
         }
 
-        var label = ( !isAllDay ? startDate.toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } ) : '' );
+        var label = ( !isAllDay ? utils.formattedTime( startDate ) : '' );
 
         if( !isAllDay && event.end && event.end.dateTime != event.start.dateTime )
         {
-            label += " to " + new Date( event.end.dateTime ).toLocaleTimeString( vscode.env.language, { hour: 'numeric', minute: 'numeric', hour12: true } );
+            label += " to " + utils.formattedTime( new Date( event.end.dateTime ) );
         }
 
         if( label.length > 0 )
@@ -205,7 +210,7 @@ class CalendarDataProvider
             type: EVENT,
             event: event,
             label: label,
-            id: ( buildCounter * 1000000 ) + nodeCounter++,
+            id: newNodeId(),
             date: startDate.withoutTime().toISOString(),
             url: event.htmlLink,
             tooltip: tooltip,
@@ -249,7 +254,7 @@ class CalendarDataProvider
         }
         nodes.forEach( function( node )
         {
-            node.id = ( buildCounter * 1000000 ) + nodeCounter++;
+            node.id = newNodeId();
             if( node.nodes )
             {
                 this.rebuild( node.nodes );

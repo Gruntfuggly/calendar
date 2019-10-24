@@ -9,8 +9,6 @@ events to be created, modified and deleted.
 
 ## TODO
 
-- [ ] Prevent showing the same notifications repeatedly
-- [ ] Support for adding all-day events
 - [ ] Support for adding/editing multi-day events
 - [ ] Support for editting locations
 - [ ] Support for editting reminders

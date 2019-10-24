@@ -1,288 +1,292 @@
 {
-	"name": "calendar",
-	"displayName": "Calendar",
-	"icon": "resources/calendar.png",
-	"description": "A VSCode extension to view and manage upcoming calendar appointments",
-	"version": "0.0.4",
-	"publisher": "Gruntfuggly",
-	"repository": "https://github.com/Gruntfuggly/calendar",
-	"engines": {
-		"vscode": "^1.5.0"
-	},
-	"preview": true,
-	"keywords": [
-		"calendar",
-		"google",
-		"outlook",
-		"events"
-	],
-	"categories": [
-		"Other"
-	],
-	"activationEvents": [
-		"*"
-	],
-	"main": "./extension",
-	"contributes": {
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "calendar",
-					"title": "Calendar",
-					"icon": "resources/calendar-container.svg"
-				}
-			]
-		},
-		"views": {
-			"explorer": [
-				{
-					"id": "calendar-explorer",
-					"name": "Calendar",
-					"when": "calendar-in-explorer"
-				}
-			],
-			"calendar": [
-				{
-					"id": "calendar",
-					"name": "Calendar"
-				}
-			]
-		},
-		"menus": {
-			"view/title": [
-				{
-					"command": "calendar.authorize",
-					"when": "view =~ /calendar/ && !calendar-is-authorized",
-					"group": "navigation@1"
-				},
-				{
-					"command": "calendar.createEvent",
-					"when": "view =~ /calendar/ && calendar-tree-has-content && calendar-is-authorized",
-					"group": "navigation@1"
-				},
-				{
-					"command": "calendar.search",
-					"when": "view =~ /calendar/ && !calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
-					"group": "navigation@2"
-				},
-				{
-					"command": "calendar.clearFilter",
-					"when": "view =~ /calendar/ && calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
-					"group": "navigation@2"
-				},
-				{
-					"command": "calendar.refresh",
-					"when": "view =~ /calendar/ && calendar-is-authorized",
-					"group": "navigation@3"
-				},
-				{
-					"command": "calendar.expand",
-					"when": "view =~ /calendar/ && calendar-show-expand && calendar-tree-has-content && calendar-is-authorized",
-					"group": "navigation@4"
-				},
-				{
-					"command": "calendar.collapse",
-					"when": "view =~ /calendar/ && calendar-show-collapse && calendar-tree-has-content && calendar-is-authorized",
-					"group": "navigation@4"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "calendar.deleteEvent",
-					"when": "view =~ /calendar/ && viewItem =~ /canDelete/",
-					"group": "inline@2"
-				},
-				{
-					"command": "calendar.editEvent",
-					"when": "view =~ /calendar/ && viewItem =~ /canEdit/",
-					"group": "inline@1"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "calendar.authorize",
-				"title": "Authorize",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/authorize.svg",
-					"light": "resources/icons/light/authorize.svg"
-				}
-			},
-			{
-				"command": "calendar.resetCache",
-				"title": "Reset Cache",
-				"category": "Calendar"
-			},
-			{
-				"command": "calendar.refresh",
-				"title": "Refresh",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/refresh.svg",
-					"light": "resources/icons/light/refresh.svg"
-				}
-			},
-			{
-				"command": "calendar.search",
-				"title": "Search",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/filter.svg",
-					"light": "resources/icons/light/filter.svg"
-				}
-			},
-			{
-				"command": "calendar.clearFilter",
-				"title": "Clear",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/clear-filter.svg",
-					"light": "resources/icons/light/clear-filter.svg"
-				}
-			},
-			{
-				"command": "calendar.expand",
-				"title": "Expand all",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/expand.svg",
-					"light": "resources/icons/light/expand.svg"
-				}
-			},
-			{
-				"command": "calendar.collapse",
-				"title": "Collapse all",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/collapse.svg",
-					"light": "resources/icons/light/collapse.svg"
-				}
-			},
-			{
-				"command": "calendar.createEvent",
-				"title": "Create New Event",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/calendar.svg",
-					"light": "resources/icons/light/calendar.svg"
-				}
-			},
-			{
-				"command": "calendar.editEvent",
-				"title": "Edit Event",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/edit.svg",
-					"light": "resources/icons/light/edit.svg"
-				}
-			},
-			{
-				"command": "calendar.deleteEvent",
-				"title": "Delete Event",
-				"category": "Calendar",
-				"icon": {
-					"dark": "resources/icons/dark/trash.svg",
-					"light": "resources/icons/light/trash.svg"
-				}
-			},
-			{
-				"command": "calendar.setLocation",
-				"title": "Set location",
-				"category": "Calendar"
-			},
-			{
-				"command": "calendar.setReminder",
-				"title": "Set reminder",
-				"category": "Calendar"
-			}
-		],
-		"configuration": {
-			"type": "object",
-			"title": "Calendar",
-			"properties": {
-				"calendar.debug": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "Enable a debug channel in the output view"
-				},
-				"calendar.showInExplorer": {
-					"type": "boolean",
-					"markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
-					"default": true
-				},
-				"calendar.maxEvents": {
-					"type": "integer",
-					"default": 10,
-					"markdownDescription": "Maximum number of future events to fetch from your calendar"
-				},
-				"calendar.historicDays": {
-					"type": "integer",
-					"default": 0,
-					"markdownDescription": "Number of days back to fetch past events"
-				},
-				"calendar.showRelativeDates": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "Set to false to show full dates instead of **Today**, **Tomorrow**, etc."
-				},
-				"calendar.autoRefreshInterval": {
-					"type": "integer",
-					"default": 60,
-					"markdownDescription": "The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing."
-				},
-				"calendar.reminderInterval": {
-					"type": "integer",
-					"default": 60,
-					"markdownDescription": "The number of minutes prior to an event to show a reminder. Set to zero to disable reminders."
-				},
-				"calendar.showAllDayRemindersAtStartup": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "If true, reminders for all day events occurring today and tomorrow will be shown."
-				},
-				"calendar.stickyReminders": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "Set to false to allow reminders to close automatically after a short period of time."
-				},
-				"calendar.google.enabled": {
-					"type": "boolean",
-					"default": true,
-					"markdownDescription": "If true, fetch your events from your google calendar"
-				},
-				"calendar.google.credentialsFile": {
-					"type": "string",
-					"default": "",
-					"markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
-				},
-				"calendar.outlook.enabled": {
-					"type": "boolean",
-					"default": false,
-					"markdownDescription": "If true, fetch your events from your google calendar"
-				},
-				"calendar.outlook.clientId": {
-					"type": "string",
-					"default": "",
-					"markdownDescription": "Client ID - see TBD"
-				},
-				"calendar.outlook.clientSecret": {
-					"type": "string",
-					"default": "",
-					"markdownDescription": "Client secret - see TBD"
-				}
-			}
-		}
-	},
-	"scripts": {},
-	"dependencies": {
-		"chrono-node": "^1.3.11",
-		"googleapis": "^44.0.0",
-		"simple-oauth2": "^3.0.0"
-	},
-	"__metadata": {
-		"id": "25cd4278-c104-4894-98ef-d94ed25ed20a",
-		"publisherDisplayName": "Gruntfuggly",
-		"publisherId": "d4906d2e-f2ee-492d-9c7c-02b6160599ec"
-	}
+    "name": "calendar",
+    "displayName": "Calendar",
+    "icon": "resources/calendar.png",
+    "description": "A VSCode extension to view and manage upcoming calendar appointments",
+    "version": "0.0.4",
+    "publisher": "Gruntfuggly",
+    "repository": "https://github.com/Gruntfuggly/calendar",
+    "engines": {
+        "vscode": "^1.5.0"
+    },
+    "preview": true,
+    "keywords": [
+        "calendar",
+        "google",
+        "outlook",
+        "events"
+    ],
+    "categories": [
+        "Other"
+    ],
+    "activationEvents": [
+        "*"
+    ],
+    "main": "./extension",
+    "contributes": {
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "calendar",
+                    "title": "Calendar",
+                    "icon": "resources/calendar-container.svg"
+                }
+            ]
+        },
+        "views": {
+            "explorer": [
+                {
+                    "id": "calendar-explorer",
+                    "name": "Calendar",
+                    "when": "calendar-in-explorer"
+                }
+            ],
+            "calendar": [
+                {
+                    "id": "calendar",
+                    "name": "Calendar"
+                }
+            ]
+        },
+        "menus": {
+            "view/title": [
+                {
+                    "command": "calendar.authorize",
+                    "when": "view =~ /calendar/ && !calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "calendar.createEvent",
+                    "when": "view =~ /calendar/ && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "calendar.search",
+                    "when": "view =~ /calendar/ && !calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "calendar.clearFilter",
+                    "when": "view =~ /calendar/ && calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "calendar.refresh",
+                    "when": "view =~ /calendar/ && calendar-is-authorized",
+                    "group": "navigation@3"
+                },
+                {
+                    "command": "calendar.expand",
+                    "when": "view =~ /calendar/ && calendar-show-expand && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@4"
+                },
+                {
+                    "command": "calendar.collapse",
+                    "when": "view =~ /calendar/ && calendar-show-collapse && calendar-tree-has-content && calendar-is-authorized",
+                    "group": "navigation@4"
+                }
+            ],
+            "view/item/context": [
+                {
+                    "command": "calendar.deleteEvent",
+                    "when": "view =~ /calendar/ && viewItem =~ /canDelete/",
+                    "group": "inline@2"
+                },
+                {
+                    "command": "calendar.editEvent",
+                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/",
+                    "group": "inline@1"
+                }
+            ]
+        },
+        "commands": [
+            {
+                "command": "calendar.authorize",
+                "title": "Authorize",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/authorize.svg",
+                    "light": "resources/icons/light/authorize.svg"
+                }
+            },
+            {
+                "command": "calendar.resetCache",
+                "title": "Reset Cache",
+                "category": "Calendar"
+            },
+            {
+                "command": "calendar.refresh",
+                "title": "Refresh",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/refresh.svg",
+                    "light": "resources/icons/light/refresh.svg"
+                }
+            },
+            {
+                "command": "calendar.search",
+                "title": "Search",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/filter.svg",
+                    "light": "resources/icons/light/filter.svg"
+                }
+            },
+            {
+                "command": "calendar.clearFilter",
+                "title": "Clear",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/clear-filter.svg",
+                    "light": "resources/icons/light/clear-filter.svg"
+                }
+            },
+            {
+                "command": "calendar.expand",
+                "title": "Expand all",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/expand.svg",
+                    "light": "resources/icons/light/expand.svg"
+                }
+            },
+            {
+                "command": "calendar.collapse",
+                "title": "Collapse all",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/collapse.svg",
+                    "light": "resources/icons/light/collapse.svg"
+                }
+            },
+            {
+                "command": "calendar.createEvent",
+                "title": "Create New Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/calendar.svg",
+                    "light": "resources/icons/light/calendar.svg"
+                }
+            },
+            {
+                "command": "calendar.editEvent",
+                "title": "Edit Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/edit.svg",
+                    "light": "resources/icons/light/edit.svg"
+                }
+            },
+            {
+                "command": "calendar.deleteEvent",
+                "title": "Delete Event",
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/trash.svg",
+                    "light": "resources/icons/light/trash.svg"
+                }
+            },
+            {
+                "command": "calendar.setLocation",
+                "title": "Set location",
+                "category": "Calendar"
+            },
+            {
+                "command": "calendar.setReminder",
+                "title": "Set reminder",
+                "category": "Calendar"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Calendar",
+            "properties": {
+                "calendar.locale": {
+                    "type": "string",
+                    "markdownDescription": "Normally the locale is determined automatically. This allows it to be overridden if required."
+                },
+                "calendar.debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "Enable a debug channel in the output view"
+                },
+                "calendar.showInExplorer": {
+                    "type": "boolean",
+                    "markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
+                    "default": true
+                },
+                "calendar.maxEvents": {
+                    "type": "integer",
+                    "default": 10,
+                    "markdownDescription": "Maximum number of future events to fetch from your calendar"
+                },
+                "calendar.historicDays": {
+                    "type": "integer",
+                    "default": 0,
+                    "markdownDescription": "Number of days back to fetch past events"
+                },
+                "calendar.showRelativeDates": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Set to false to show full dates instead of **Today**, **Tomorrow**, etc."
+                },
+                "calendar.autoRefreshInterval": {
+                    "type": "integer",
+                    "default": 60,
+                    "markdownDescription": "The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing."
+                },
+                "calendar.reminderInterval": {
+                    "type": "integer",
+                    "default": 60,
+                    "markdownDescription": "The number of minutes prior to an event to show a reminder. Set to zero to disable reminders."
+                },
+                "calendar.showAllDayRemindersAtStartup": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "If true, reminders for all day events occurring today and tomorrow will be shown."
+                },
+                "calendar.stickyReminders": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Set to false to allow reminders to close automatically after a short period of time."
+                },
+                "calendar.google.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "If true, fetch your events from your google calendar"
+                },
+                "calendar.google.credentialsFile": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
+                },
+                "calendar.outlook.enabled": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "If true, fetch your events from your google calendar"
+                },
+                "calendar.outlook.clientId": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client ID - see TBD"
+                },
+                "calendar.outlook.clientSecret": {
+                    "type": "string",
+                    "default": "",
+                    "markdownDescription": "Client secret - see TBD"
+                }
+            }
+        }
+    },
+    "scripts": {},
+    "dependencies": {
+        "chrono-node": "^1.3.11",
+        "googleapis": "^44.0.0",
+        "simple-oauth2": "^3.0.0"
+    },
+    "__metadata": {
+        "id": "25cd4278-c104-4894-98ef-d94ed25ed20a",
+        "publisherDisplayName": "Gruntfuggly",
+        "publisherId": "d4906d2e-f2ee-492d-9c7c-02b6160599ec"
+    }
 }
