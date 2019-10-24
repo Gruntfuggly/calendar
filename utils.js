@@ -2,12 +2,17 @@ var vscode = require( 'vscode' );
 
 var localeRegex = new RegExp( '^[a-z]{2}(\-[a-z]{2})*$', 'i' );
 
+function isValidLocale( locale )
+{
+    return locale.match( localeRegex );
+}
+
 function getLocale()
 {
-    var _locale = vscode.workspace.getConfiguration( 'calendar' ).get( 'locale', vscode.env.language );
-    if( _locale.match( localeRegex ) )
+    var locale = vscode.workspace.getConfiguration( 'calendar' ).get( 'locale', vscode.env.language );
+    if( isValidLocale( locale ) )
     {
-        return _locale;
+        return locale;
     }
     return vscode.env.language;
 }
@@ -110,6 +115,7 @@ function formattedTime( date )
     return date.toLocaleTimeString( getLocale(), { hour: 'numeric', minute: 'numeric', hour12: true } )
 }
 
+module.exports.isValidLocale = isValidLocale;
 module.exports.getLocale = getLocale;
 module.exports.daysFrom = daysFrom;
 module.exports.isToday = isToday;

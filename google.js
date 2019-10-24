@@ -182,13 +182,12 @@ function toISODate( date )
 
 function createEvent( callback, summary, eventDateTime )
 {
-    debug( "eventDateTime: " + JSON.stringify( eventDateTime ) );
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
-    var event;
+    var newEvent;
 
     if( eventDateTime.allDay )
     {
-        event = {
+        newEvent = {
             summary: summary,
             // location: '800 Howard St., San Francisco, CA 94103',
             // description: "A chance to hear more about Google's developer products.",
@@ -202,7 +201,7 @@ function createEvent( callback, summary, eventDateTime )
     }
     else
     {
-        event = {
+        newEvent = {
             summary: summary,
             start: {
                 dateTime: eventDateTime.start
@@ -213,51 +212,85 @@ function createEvent( callback, summary, eventDateTime )
         };
     }
 
-    debug( "event: " + JSON.stringify( event, null, 2 ) );
+    debug( "requested event: " + JSON.stringify( newEvent ) );
+
     calendar.events.insert(
         {
             auth: oAuth2Client,
             calendarId: 'primary',
-            resource: event
+            resource: newEvent
         },
-        function( error, event )
+        function( error, result )
         {
-            vscode.window.showInformationMessage( error ? ( "Failed to create new event: " + error ) : "Event created" );
-            debug( "createEvent result: " + ( error ? error : JSON.stringify( event ) ) );
-            if( !error )
+            if( error )
             {
+                vscode.window.showInformationMessage( "Failed to create event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event created" );
+                debug( JSON.stringify( result ) );
                 callback();
             }
+
         }
     );
 }
 
-function editEvent( callback, eventId, summary, dateTime )
+function editEvent( callback, eventId, summary, eventDateTime )
 {
+    debug( "edt:" + JSON.stringify( eventDateTime ) );
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
-    var event = {
-        summary: summary,
-        start: {
-            dateTime: dateTime
-        },
-        end: {
-            dateTime: dateTime
-        }
-    };
+    var updatedEvent;
+
+    if( eventDateTime.allDay )
+    {
+        updatedEvent = {
+            summary: summary,
+            // location: '800 Howard St., San Francisco, CA 94103',
+            // description: "A chance to hear more about Google's developer products.",
+            start: {
+                date: toISODate( eventDateTime.start )
+            },
+            end: {
+                date: toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) )
+            }
+        };
+    }
+    else
+    {
+        updatedEvent = {
+            summary: summary,
+            start: {
+                dateTime: eventDateTime.start
+            },
+            end: {
+                dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start
+            }
+        };
+    }
+
+    debug( "requested event: " + JSON.stringify( updatedEvent ) );
 
     calendar.events.update(
         {
             auth: oAuth2Client,
             calendarId: 'primary',
             eventId: eventId,
-            resource: event
+            resource: updatedEvent
         },
-        function( error, event )
+        function( error, result )
         {
-            vscode.window.showInformationMessage( error ? ( "Failed to update event: " + error ) : "Event updated" );
-            debug( "updateEvent result: " + ( error ? error : JSON.stringify( event ) ) );
-            if( !error )
+            if( error )
             {
+                vscode.window.showInformationMessage( "Failed to update event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event updated" );
+                debug( JSON.stringify( result ) );
                 callback();
             }
         }
@@ -275,10 +308,10 @@ function deleteEvent( callback, eventId )
             calendarId: 'primary',
             eventId: eventId
         },
-        function( error, event )
+        function( error, result )
         {
             vscode.window.showInformationMessage( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
-            debug( "deleteEvent result: " + ( error ? error : JSON.stringify( event ) ) );
+            debug( "deleteEvent result: " + ( error ? error : JSON.stringify( result ) ) );
             if( !error )
             {
                 callback();

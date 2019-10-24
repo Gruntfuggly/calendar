@@ -15,7 +15,7 @@ function isAllDay( parsedDateTime )
 {
     return parsedDateTime.length > 0 && Object.keys( parsedDateTime[ 0 ].tags ).filter( function( tag )
     {
-        return tag.match( /time/i );
+        return tag.match( /time.*parser/i );
     } ).length === 0;
 }
 
@@ -39,7 +39,14 @@ function showHint( type, parsedDateTime, status )
     }
     else if( parsedDateTime[ 0 ].end )
     {
-        hint += " until " + utils.formattedTime( parsedDateTime[ 0 ].end.date() );
+        if( allDay )
+        {
+            hint += " until " + parsedDateTime[ 0 ].end.date().toLocaleDateString( utils.getLocale() );
+        }
+        else
+        {
+            hint += " until " + utils.formattedTime( parsedDateTime[ 0 ].end.date() );
+        }
     }
 
     status.text = hint;
@@ -483,10 +490,10 @@ function activate( context )
             {
                 if( summary )
                 {
-                    var isAllDay = e.event.start.date !== undefined;
-                    var originalDateTime = new Date( isAllDay ? e.event.start.date : e.event.start.dateTime );
+                    var allDay = e.event.start.date !== undefined;
+                    var originalDateTime = new Date( allDay ? e.event.start.date : e.event.start.dateTime );
                     var originalDateTimeText = utils.dateLabel( originalDateTime );
-                    if( !isAllDay )
+                    if( !allDay )
                     {
                         originalDateTimeText += ' ' + originalDateTime.toLocaleTimeString( utils.getLocale() );
                         if( e.event.end.dateTime !== e.event.start.dateTime )
@@ -494,15 +501,35 @@ function activate( context )
                             originalDateTimeText += " until " + ( new Date( e.event.end.dateTime ) ).toLocaleTimeString( utils.getLocale() );
                         }
                     }
+                    else
+                    {
+                        if( e.event.end.date )
+                        {
+                            var endDate = new Date( e.event.end.date );
+                            if( utils.daysFrom( originalDateTime, endDate ) > 1 )
+                            {
+                                originalDateTimeText += " until " + utils.dateLabel( endDate.addDays( -1 ) );
+                            }
+                        }
+                    }
 
                     getEventDateAndTime( function( parsedDateTime )
                     {
                         if( e.source === GOOGLE )
                         {
+                            var end;
+                            if( parsedDateTime.length > 1 )
+                            {
+                                end = parsedDateTime[ 1 ].start.date();
+                            }
+                            else if( parsedDateTime[ 0 ].end )
+                            {
+                                end = parsedDateTime[ 0 ].end.date();
+                            }
                             var eventDateTime = {
                                 start: parsedDateTime[ 0 ].start.date(),
                                 allDay: isAllDay( parsedDateTime ),
-                                end: parsedDateTime.length > 1 ? parsedDateTime[ 1 ].start.date() : undefined
+                                end: end
                             };
 
                             googleCalendar.editEvent( refresh, e.event.id, summary, eventDateTime );
@@ -525,7 +552,8 @@ function activate( context )
                     if( e.source === GOOGLE )
                     {
                         googleCalendar.deleteEvent( refresh, e.event.id );
-                        acknowledgedReminders[ event.id ] = new Date();
+                        var acknowledgedReminders = context.globalState.get( 'calendar.google.acknowledgedReminders', {} );
+                        acknowledgedReminders[ e.event.id ] = new Date();
                         context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
                     }
                 }
@@ -558,7 +586,7 @@ function activate( context )
                 else if( e.affectsConfiguration( "calendar.locale" ) )
                 {
                     var locale = vscode.workspace.getConfiguration( 'calendar' ).get( 'locale' );
-                    if( locale !== undefined && locale.length > 0 && !locale.match( localeRegex ) )
+                    if( locale !== undefined && locale.length > 0 && !utils.isValidLocale( locale ) )
                     {
                         vscode.window.showErrorMessage( "Invalid locale: " + locale );
                     }
