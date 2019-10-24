@@ -238,7 +238,12 @@
                 "calendar.reminderInterval": {
                     "type": "integer",
                     "default": 60,
-                    "markdownDescription": "The number of minutes prior to an event to show a reminder. Set to zero to disable reminders."
+                    "markdownDescription": "Show a reminder of an event this number of minutes before it occurs. Set to zero to disable reminders."
+                },
+                "calendar.reminderRepeatInterval": {
+                    "type": "integer",
+                    "default": 15,
+                    "markdownDescription": "After snoozing a reminder, repeat it after this number of minutes. Set to zero to disable repeated reminders."
                 },
                 "calendar.showAllDayRemindersAtStartup": {
                     "type": "boolean",

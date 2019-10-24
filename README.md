@@ -52,7 +52,8 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.historicDays                 | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                         |
 | calendar.showRelativeDates            | true    | Set to false to show full dates instead of **Today**, **Tomorrow**, etc.                                        |
 | calendar.autoRefreshInterval          | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing. |
-| calendar.reminderInterval             | 60      | The number of minutes prior to an event to show a reminder. Set to zero to disable reminders.                   |
+| calendar.reminderInterval             | 60      | Show a reminder of an event this number of minutes before it occurs. Set to zero to disable reminders.          |
+| calendar.reminderRepeatInterval       | 15      | After snoozing a reminder, repeat it after this number of minutes. Set to zero to disable repeated reminders.   |
 | calendar.showAllDayRemindersAtStartup | true    | If true, reminders for all day events occurring today and tomorrow will be shown.                               |
 | calendar.stickyReminders              | true    | Set to false to allow reminders to close automatically after a short period of time.                            |
 | calendar.google.enabled               | true    | Set to true to enable google calendar integration.                                                              |
@@ -62,6 +63,9 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.outlook.clientId     | | Your client ID for your outlook calendar     |
 | calendar.outlook.clientSecret | | Your client secret for your outlook calendar |
 -->
+
+*Note: Reminders are purely notifications in VSCode and are independent of your actual calendar reminders.*
+
 ## Donate
 
 If you find this extension useful, please feel free to donate <a href="https://paypal.me/Gruntfuggly">here</a>. Thanks!

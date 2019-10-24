@@ -9,6 +9,7 @@ var utils = require( './utils' );
 var GOOGLE = 'GOOGLE';
 var OUTLOOK = 'OUTLOOK';
 var OK = 'OK';
+var IGNORE = 'Snooze';
 
 function isAllDay( parsedDateTime )
 {
@@ -23,7 +24,6 @@ function showHint( type, parsedDateTime, status )
     var hint;
     var allDay = isAllDay( parsedDateTime );
 
-    console.log( JSON.stringify( parsedDateTime ) );
     if( allDay )
     {
         hint = type + " all-day event " + ( parsedDateTime.length > 1 ? "from " : "on " ) + parsedDateTime[ 0 ].start.date().toLocaleDateString( utils.getLocale() );
@@ -149,6 +149,62 @@ function activate( context )
         allDayRemindersShown = true;
     }
 
+    function showReminder( event )
+    {
+        var config = vscode.workspace.getConfiguration( 'calendar' );
+
+        var acknowledgedReminders = context.globalState.get( 'calendar.google.acknowledgedReminders', {} );
+        if( acknowledgedReminders[ event.id ] === undefined )
+        {
+            debug( "Showing notification for " + event.summary );
+            var eventTime = new Date( event.start.dateTime );
+            var text = eventTime.toLocaleTimeString( utils.getLocale(), { hour: 'numeric', minute: 'numeric', hour12: true } ) + ": " + event.summary;
+
+            if( config.get( 'stickyReminders' ) )
+            {
+                vscode.window.showErrorMessage( text, OK, IGNORE ).then( function( button )
+                {
+                    if( button === OK )
+                    {
+                        acknowledgedReminders[ event.id ] = eventTime;
+                        context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
+                    }
+                    else
+                    {
+                        var repeatIntervalInMilliseconds = config.get( 'reminderRepeatInterval', 0 ) * 60000;
+                        if( repeatIntervalInMilliseconds > 0 )
+                        {
+                            var now = new Date();
+                            var nextReminder = now.getTime() + repeatIntervalInMilliseconds;
+                            if( nextReminder < eventTime.getTime() )
+                            {
+                                scheduleRepeatReminder( event, repeatIntervalInMilliseconds );
+                            }
+                        }
+                    }
+                } );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( text );
+            }
+        }
+    }
+
+    function scheduleRepeatReminder( event, millisecondsUntilReminder )
+    {
+        if( reminders[ event.id ] !== undefined )
+        {
+            clearTimeout( reminders[ event.id ] );
+        }
+        if( millisecondsUntilReminder > 0 )
+        {
+            debug( "Scheduling repeat reminder for " + event.summary + " in " + ( millisecondsUntilReminder / 60000 ).toFixed( 1 ) + " minutes" );
+        }
+
+        reminders[ event.id ] = setTimeout( showReminder, millisecondsUntilReminder, event );
+    }
+
     function showReminders( events )
     {
         var reminderInterval = vscode.workspace.getConfiguration( 'calendar' ).get( 'reminderInterval', 0 );
@@ -172,32 +228,8 @@ function activate( context )
                         {
                             debug( "Scheduling reminder for " + event.summary + " in " + ( millisecondsUntilReminder / 60000 ).toFixed( 1 ) + " minutes" );
                         }
-                        reminders[ event.id ] = setTimeout( function( event )
-                        {
-                            var acknowledgedReminders = context.globalState.get( 'calendar.google.acknowledgedReminders', {} );
-                            if( acknowledgedReminders[ event.id ] === undefined )
-                            {
-                                debug( "Showing notification for " + event.summary );
-                                var eventTime = new Date( event.start.dateTime );
-                                var text = eventTime.toLocaleTimeString( utils.getLocale(), { hour: 'numeric', minute: 'numeric', hour12: true } ) + ": " + event.summary;
 
-                                if( vscode.workspace.getConfiguration( 'calendar' ).get( 'stickyReminders' ) )
-                                {
-                                    vscode.window.showErrorMessage( text, OK ).then( function( button )
-                                    {
-                                        if( button === OK )
-                                        {
-                                            acknowledgedReminders[ event.id ] = eventTime;
-                                            context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
-                                        }
-                                    } );
-                                }
-                                else
-                                {
-                                    vscode.window.showInformationMessage( text );
-                                }
-                            }
-                        }, millisecondsUntilReminder, event );
+                        reminders[ event.id ] = setTimeout( showReminder, millisecondsUntilReminder, event );
                     }
                 }
             } );
@@ -493,6 +525,8 @@ function activate( context )
                     if( e.source === GOOGLE )
                     {
                         googleCalendar.deleteEvent( refresh, e.event.id );
+                        acknowledgedReminders[ event.id ] = new Date();
+                        context.globalState.update( 'calendar.google.acknowledgedReminders', acknowledgedReminders );
                     }
                 }
             } );
