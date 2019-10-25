@@ -462,9 +462,9 @@ function activate( context )
             refresh();
         } ) );
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.search', function()
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.filter', function()
         {
-            vscode.window.showInputBox( { prompt: "Search the calendar" } ).then( function( term )
+            vscode.window.showInputBox( { prompt: "Filter the calendar" } ).then( function( term )
             {
                 context.workspaceState.update( 'calendar.filter', term ).then( function()
                 {

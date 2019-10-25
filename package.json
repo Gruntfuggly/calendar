@@ -61,7 +61,7 @@
                     "group": "navigation@1"
                 },
                 {
-                    "command": "calendar.search",
+                    "command": "calendar.filter",
                     "when": "view =~ /calendar/ && !calendar-is-filtered && calendar-tree-has-content && calendar-is-authorized",
                     "group": "navigation@2"
                 },
@@ -101,6 +101,9 @@
                     "command": "calendar.setLocation",
                     "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
                 },
+                {
+                    "command": "calendar.setReminder",
+                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
                 }
             ]
         },
@@ -129,8 +132,8 @@
                 }
             },
             {
-                "command": "calendar.search",
-                "title": "Search",
+                "command": "calendar.filter",
+                "title": "Filter",
                 "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/filter.svg",
@@ -169,13 +172,13 @@
                 "title": "Create New Event",
                 "category": "Calendar",
                 "icon": {
-                    "dark": "resources/icons/dark/calendar.svg",
-                    "light": "resources/icons/light/calendar.svg"
+                    "dark": "resources/icons/dark/add.svg",
+                    "light": "resources/icons/light/add.svg"
                 }
             },
             {
                 "command": "calendar.editEvent",
-                "title": "Edit Event",
+                "title": "Change",
                 "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/edit.svg",
@@ -184,7 +187,7 @@
             },
             {
                 "command": "calendar.deleteEvent",
-                "title": "Delete Event",
+                "title": "Remove",
                 "category": "Calendar",
                 "icon": {
                     "dark": "resources/icons/dark/trash.svg",
@@ -203,7 +206,11 @@
             {
                 "command": "calendar.setReminder",
                 "title": "Set reminder",
-                "category": "Calendar"
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/edit.svg",
+                    "light": "resources/icons/light/edit.svg"
+                }
             }
         ],
         "configuration": {
