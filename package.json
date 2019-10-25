@@ -3,7 +3,7 @@
     "displayName": "Calendar",
     "icon": "resources/calendar.png",
     "description": "A VSCode extension to view and manage upcoming calendar appointments",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "publisher": "Gruntfuggly",
     "repository": "https://github.com/Gruntfuggly/calendar",
     "engines": {
