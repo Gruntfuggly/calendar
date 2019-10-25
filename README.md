@@ -45,6 +45,7 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | Setting                               | Default | Description                                                                                                     |
 |---------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------|
 | calendar.debug                        | false   | Enable a debug channel in the output view.                                                                      |
+| calendar.locale                       |         | Normally the locale is determined automatically. This allows it to be overridden if required.                   |
 | calendar.showInExplorer               | true    | If true, show the view in the explorer view.                                                                    |
 | calendar.maxEvents                    | 10      | Maximum number of future events to fetch from your calendar.                                                    |
 | calendar.historicDays                 | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                         |

@@ -217,14 +217,14 @@
             "type": "object",
             "title": "Calendar",
             "properties": {
-                "calendar.locale": {
-                    "type": "string",
-                    "markdownDescription": "Normally the locale is determined automatically. This allows it to be overridden if required."
-                },
                 "calendar.debug": {
                     "type": "boolean",
                     "default": false,
                     "markdownDescription": "Enable a debug channel in the output view"
+                },
+                "calendar.locale": {
+                    "type": "string",
+                    "markdownDescription": "Normally the locale is determined automatically. This allows it to be overridden if required."
                 },
                 "calendar.showInExplorer": {
                     "type": "boolean",

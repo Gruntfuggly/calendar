@@ -257,7 +257,7 @@ function activate( context )
                 } );
                 filterTree( context.workspaceState.get( 'calendar.filter' ) );
                 calendarTree.refresh();
-                setButtons();
+                setContext();
                 if( !allDayRemindersShown )
                 {
                     showAllDayReminders( events );
@@ -292,11 +292,11 @@ function activate( context )
             debug( "Clearing filter" );
             calendarTree.clearFilter();
             calendarTree.refresh();
-            setButtons();
+            setContext();
         } );
     }
 
-    function setButtons()
+    function setContext()
     {
         var showTree = true;
         var expanded = context.workspaceState.get( 'calendar.expanded' );
@@ -319,7 +319,7 @@ function activate( context )
         {
             calendarTree.clearExpansionState();
             calendarTree.refresh();
-            setButtons();
+            setContext();
         } );
     }
 
@@ -329,7 +329,7 @@ function activate( context )
         {
             calendarTree.clearExpansionState();
             calendarTree.refresh();
-            setButtons();
+            setContext();
         } );
     }
 
@@ -346,7 +346,7 @@ function activate( context )
             calendarTree.clearFilter();
         }
         calendarTree.refresh();
-        setButtons();
+        setContext();
     }
 
     function getEventDateAndTime( callback, status, prompt, type, originalDateTimeText )
@@ -661,16 +661,25 @@ function activate( context )
                         vscode.window.showErrorMessage( "Invalid locale: " + locale );
                     }
                 }
+                else if( e.affectsConfiguration( 'calendar.showInExplorer' ) )
+                {
+                    setContext();
+                }
                 else if( e.affectsConfiguration( 'calendar.autoRefreshInterval' ) )
                 {
                     setAutoRefreshTimer();
                 }
                 else if(
-                    e.affectsConfiguration( 'calendar.google.credentialsFile' ) ||
                     e.affectsConfiguration( 'calendar.maxEvents' ) ||
                     e.affectsConfiguration( 'calendar.historicDays' ) ||
                     e.affectsConfiguration( 'calendar.reminderInterval' ) ||
-                    e.affectsConfiguration( 'calendar.showRelativeDates' ) )
+                    e.affectsConfiguration( 'calendar.reminderRepeatInterval' ) ||
+                    e.affectsConfiguration( 'calendar.showRelativeDates' ) ||
+                    e.affectsConfiguration( 'calendar.google.enabled' ) ||
+                    e.affectsConfiguration( 'calendar.google.credentialsFile' ) ||
+                    e.affectsConfiguration( 'calendar.outlook.enabled' ) ||
+                    e.affectsConfiguration( 'calendar.outlook.clientSecret' ) ||
+                    e.affectsConfiguration( 'calendar.outlook.clientId' ) )
                 {
                     refresh();
                 }
@@ -680,7 +689,7 @@ function activate( context )
         context.subscriptions.push( outputChannel );
 
         resetOutputChannel();
-        setButtons();
+        setContext();
         fetch();
         setAutoRefreshTimer();
         purgeAcknowledgedReminders();
