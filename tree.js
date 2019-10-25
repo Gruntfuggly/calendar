@@ -322,12 +322,15 @@ class CalendarDataProvider
         nodes.forEach( function( node )
         {
             var match = matcher.test( node.label );
-            node.visible = !term || match;
 
-            if( node.nodes )
+            if( !match && node.nodes )
             {
                 this.filter( term, node.nodes );
                 node.visible = node.nodes.filter( isVisible ).length > 0;
+            }
+            else
+            {
+                node.visible = !term || match;
             }
         }, this );
     }

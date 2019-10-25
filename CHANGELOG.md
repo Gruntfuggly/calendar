@@ -1,3 +1,5 @@
+- Fix filtering
+
 # v0.0.5 - 2019-10-25
 - Handle all day events better
 - Handle multiple day events better
