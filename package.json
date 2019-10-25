@@ -268,7 +268,7 @@
                 "calendar.outlook.enabled": {
                     "type": "boolean",
                     "default": false,
-                    "markdownDescription": "If true, fetch your events from your google calendar"
+                    "markdownDescription": "If true, fetch your events from your outlook calendar"
                 },
                 "calendar.outlook.clientId": {
                     "type": "string",
