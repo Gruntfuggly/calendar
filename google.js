@@ -295,7 +295,6 @@ function editEvent( callback, eventId, summary, eventDateTime )
             }
         }
     );
-
 }
 
 function deleteEvent( callback, eventId )
@@ -320,9 +319,41 @@ function deleteEvent( callback, eventId )
     );
 }
 
+function setLocation( callback, event, location )
+{
+    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+
+    var updatedEvent = event;
+    event.location = location;
+
+    calendar.events.update(
+        {
+            auth: oAuth2Client,
+            calendarId: 'primary',
+            eventId: event.id,
+            resource: updatedEvent
+        },
+        function( error, result )
+        {
+            if( error )
+            {
+                vscode.window.showInformationMessage( "Failed to update event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event updated" );
+                debug( JSON.stringify( result ) );
+                callback();
+            }
+        }
+    );
+}
+
 module.exports.init = init;
 module.exports.fetch = fetch;
 module.exports.isAllDay = isAllDay;
 module.exports.createEvent = createEvent;
 module.exports.editEvent = editEvent;
 module.exports.deleteEvent = deleteEvent;
+module.exports.setLocation = setLocation;

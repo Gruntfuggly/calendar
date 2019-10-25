@@ -7,8 +7,9 @@ var expandedNodes = {};
 var buildCounter = 1;
 var nodeCounter = 1;
 
-var DATE = "date";
-var EVENT = "event";
+var DATE = "DATE";
+var EVENT = "EVENT";
+var LOCATION = "LOCATION";
 
 Date.prototype.withoutTime = function()
 {
@@ -75,6 +76,15 @@ class CalendarDataProvider
             return node.nodes.filter( function( n ) { return n.visible; } );
         }
         else if( node.type === EVENT )
+        {
+            var children = node.nodes.filter( function( n ) { return n.visible; } );
+            if( children.length > 0 )
+            {
+                return children;
+            }
+            return node.text;
+        }
+        else if( node.type === DETAILS )
         {
             return node.text;
         }
@@ -218,8 +228,26 @@ class CalendarDataProvider
             icon: isAllDay ? 'calendar' : 'time',
             contextValue: 'canEdit canDelete',
             source: source,
-            isPast: startDate.getTime() < now.getTime()
+            isPast: startDate.getTime() < now.getTime(),
+            nodes: []
         };
+
+        if( event.location )
+        {
+            var locationNode = {
+                type: LOCATION,
+                event: event,
+                label: "Location: " + event.location,
+                id: newNodeId(),
+                visible: true,
+                icon: 'location',
+                contextValue: 'canEdit canDelete',
+                source: source,
+                isPast: startDate.getTime() < now.getTime(),
+            }
+
+            eventNode.nodes.push( locationNode );
+        }
 
         var icons = [
             { 'keywords': 'anniversary,party', 'icon': 'anniversary' },
@@ -318,6 +346,16 @@ class CalendarDataProvider
                 this.clearFilter( node.nodes );
             }
         }, this );
+    }
+
+    isEventNode( node )
+    {
+        return node && node.type === EVENT;
+    }
+
+    isLocationNode( node )
+    {
+        return node && node.type === LOCATION;
     }
 }
 exports.CalendarDataProvider = CalendarDataProvider;

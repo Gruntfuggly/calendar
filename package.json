@@ -96,6 +96,11 @@
                     "command": "calendar.editEvent",
                     "when": "view =~ /calendar/ && viewItem =~ /canEdit/",
                     "group": "inline@1"
+                },
+                {
+                    "command": "calendar.setLocation",
+                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
+                },
                 }
             ]
         },
@@ -189,7 +194,11 @@
             {
                 "command": "calendar.setLocation",
                 "title": "Set location",
-                "category": "Calendar"
+                "category": "Calendar",
+                "icon": {
+                    "dark": "resources/icons/dark/edit.svg",
+                    "light": "resources/icons/light/edit.svg"
+                }
             },
             {
                 "command": "calendar.setReminder",
