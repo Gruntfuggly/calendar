@@ -106,7 +106,6 @@ function activate( context )
 
     function setAutoRefreshTimer()
     {
-        debug( "setAutoRefreshTimer" );
         clearInterval( refreshTimer );
 
         var interval = vscode.workspace.getConfiguration( 'calendar' ).get( 'autoRefreshInterval', 60 );
@@ -644,6 +643,19 @@ function activate( context )
         context.subscriptions.push( calendarView.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element.date, true ); } ) );
         context.subscriptions.push( calendarViewExplorer.onDidCollapseElement( function( e ) { calendarTree.setExpanded( e.element.date, false ); } ) );
         context.subscriptions.push( calendarView.onDidCollapseElement( function( e ) { calendarTree.setExpanded( e.element.date, false ); } ) );
+
+        context.subscriptions.push( vscode.window.onDidChangeWindowState( function( e )
+        {
+            if( e.focused )
+            {
+                var interval = vscode.workspace.getConfiguration( 'calendar' ).get( 'autoRefreshInterval', 60 );
+                if( interval > 0 )
+                {
+                    refresh();
+                    setAutoRefreshTimer();
+                }
+            }
+        } ) );
 
         context.subscriptions.push( vscode.workspace.onDidChangeConfiguration( function( e )
         {

@@ -1,4 +1,5 @@
 - Fix filtering
+- Refresh on window focus if autoRefresh is enabled
 
 # v0.0.5 - 2019-10-25
 - Handle all day events better
