@@ -424,10 +424,10 @@ function activate( context )
     {
         vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
 
-        vscode.commands.registerCommand( 'calendar.open', function( url )
+        vscode.commands.registerCommand( 'calendar.open', function( node )
         {
-            debug( "Opening calendar, URL: " + url );
-            // TODO Open in browser
+            debug( "Opening calendar, URL: " + node.url );
+            vscode.commands.executeCommand( 'vscode.open', vscode.Uri.parse( node.url ) );
         } );
 
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', refresh ) );

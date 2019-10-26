@@ -98,6 +98,10 @@
                     "group": "inline@1"
                 },
                 {
+                    "command": "calendar.open",
+                    "when": "view =~ /calendar/ && viewItem =~ /canOpen/"
+                },
+                {
                     "command": "calendar.setLocation",
                     "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
                 },
@@ -211,6 +215,11 @@
                     "dark": "resources/icons/dark/edit.svg",
                     "light": "resources/icons/light/edit.svg"
                 }
+            },
+            {
+                "command": "calendar.open",
+                "title": "Open in Browser",
+                "category": "Calendar"
             }
         ],
         "configuration": {

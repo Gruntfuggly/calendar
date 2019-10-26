@@ -140,17 +140,6 @@ class CalendarDataProvider
 
         treeItem.contextValue = node.contextValue;
 
-        // if( node.clickable )
-        // {
-        //     treeItem.command = {
-        //         command: "calendar-view.open",
-        //         title: "",
-        //         arguments: [
-        //             node.url
-        //         ]
-        //     };
-        // }
-
         return treeItem;
     }
 
@@ -226,7 +215,7 @@ class CalendarDataProvider
             tooltip: tooltip,
             visible: true,
             icon: isAllDay ? 'calendar' : 'time',
-            contextValue: 'canEdit canDelete',
+            contextValue: 'canEdit canDelete canOpen',
             source: source,
             isPast: startDate.getTime() < now.getTime(),
             nodes: []
