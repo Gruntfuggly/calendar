@@ -1,6 +1,7 @@
 - Fix filtering
 - Refresh on window focus if autoRefresh is enabled
 - Add open event in browser
+- Include end date in nodes to prevent events merging
 
 # v0.0.5 - 2019-10-25
 - Handle all day events better

@@ -25,7 +25,7 @@ var isVisible = function( node )
 
 var sortByDate = function( a, b )
 {
-    return new Date( a.date ) - new Date( b.date );
+    return new Date( a.startDate ) - new Date( b.startDate );
 };
 
 function newNodeId()
@@ -128,9 +128,10 @@ class CalendarDataProvider
         if( node.nodes && node.nodes.length > 0 )
         {
             treeItem.collapsibleState = vscode.TreeItemCollapsibleState.Collapsed;
-            if( expandedNodes[ node.date ] !== undefined )
+            var nodeId = node.startDate + ( node.endDate ? node.endDate : "" );
+            if( expandedNodes[ nodeId ] !== undefined )
             {
-                treeItem.collapsibleState = ( expandedNodes[ node.date ] === true ) ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
+                treeItem.collapsibleState = ( expandedNodes[ nodeId ] === true ) ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed;
             }
             else
             {
@@ -152,21 +153,31 @@ class CalendarDataProvider
     {
         function findDate( node )
         {
-            return node.date === this;
+            return node.startDate === this.startDate && node.endDate === this.endDate;
         }
 
+        console.log( JSON.stringify( event, null, 2 ) );
         var now = new Date();
         var isAllDay = event.start.date !== undefined;
         var startDate = new Date( isAllDay ? event.start.date : event.start.dateTime );
+        var endDate;
+        if( event.end && event.end.date )
+        {
+            endDate = ( new Date( event.end.date ) ).addDays( -1 );
+        }
         var multipleDays = event.end.date && utils.daysFrom( startDate, new Date( event.end.date ) ) > 1;
 
-        var dateNode = dateNodes.find( findDate, startDate.withoutTime().toISOString() );
+        var dateNode = dateNodes.find( findDate, {
+            startDate: startDate.withoutTime().toISOString(),
+            endDate: endDate ? endDate.withoutTime().toISOString() : undefined
+        } );
 
         if( !dateNode || multipleDays )
         {
             dateNode = {
                 type: DATE,
-                date: startDate.withoutTime().toISOString(),
+                startDate: startDate.withoutTime().toISOString(),
+                endDate: endDate ? endDate.withoutTime().toISOString() : undefined,
                 id: newNodeId(),
                 label: utils.dateLabel( startDate ),
                 nodes: [],
@@ -178,7 +189,7 @@ class CalendarDataProvider
 
             if( multipleDays === true )
             {
-                dateNode.label += " until " + utils.dateLabel( ( new Date( event.end.date ) ).addDays( -1 ) );
+                dateNode.label += " until " + utils.dateLabel( endDate );
             }
 
             dateNodes.push( dateNode );
@@ -210,7 +221,6 @@ class CalendarDataProvider
             event: event,
             label: label,
             id: newNodeId(),
-            date: startDate.withoutTime().toISOString(),
             url: event.htmlLink,
             tooltip: tooltip,
             visible: true,
@@ -290,7 +300,8 @@ class CalendarDataProvider
 
     setExpanded( date, expanded )
     {
-        expandedNodes[ date ] = expanded;
+        var nodeId = node.startDate + ( node.endDate ? node.endDate : "" );
+        expandedNodes[ nodeId ] = expanded;
         this._context.workspaceState.update( 'calendar.expandedNodes', expandedNodes );
     }
 
