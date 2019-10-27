@@ -11,7 +11,7 @@ var credentials = {
         tokenPath: 'common/oauth2/v2.0/token'
     }
 };
-var oauth2;
+var oauth2Client;
 
 function setCredentials( clientId, secret )
 {
@@ -19,12 +19,12 @@ function setCredentials( clientId, secret )
         id: clientId,
         secret: secret
     };
-    oauth2 = require( 'simple-oauth2' ).create( credentials );
+    oauth2Client = require( 'simple-oauth2' ).create( credentials );
 }
 
 function getAuthUrl()
 {
-    var returnVal = oauth2.authorizationCode.authorizeURL( {
+    var returnVal = oauth2Client.authorizationCode.authorizeURL( {
         redirect_uri: 'https://login.microsoftonline.com/common/oauth2/nativeclient',
         scope: 'openid profile User.Read Calendars.Read'
     } );
@@ -45,7 +45,7 @@ function fetch( populateTree, context, debug )
         {
             vscode.window.showInputBox( { prompt: "Please enter the generated token", placeHolder: "Token" } ).then( function( code )
             {
-                oAuth2Client.getToken( code, function( error, token )
+                oauth2Client.getToken( code, function( error, token )
                 {
                     if( error )
                     {
@@ -53,10 +53,10 @@ function fetch( populateTree, context, debug )
                     }
                     else
                     {
-                        oAuth2Client.setCredentials( token );
+                        oauth2Client.setCredentials( token );
                         context.globalState.update( 'calendar.outlook.token', JSON.stringify( token ) );
                         debug( "Token stored" );
-                        callback( oAuth2Client );
+                        callback( oauth2Client );
                     }
                 } );
             } );
@@ -66,13 +66,13 @@ function fetch( populateTree, context, debug )
 
 async function getTokenFromCode( auth_code )
 {
-    let result = await oauth2.authorizationCode.getToken( {
+    let result = await oauth2Client.authorizationCode.getToken( {
         code: auth_code,
         redirect_uri: process.env.REDIRECT_URI,
         scope: process.env.APP_SCOPES
     } );
 
-    const token = oauth2.accessToken.create( result );
+    const token = oauth2Client.accessToken.create( result );
     console.log( 'Token created: ', token.token );
     return token.token.access_token;
 }
