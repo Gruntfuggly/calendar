@@ -309,7 +309,7 @@ function deleteEvent( callback, eventId )
         },
         function( error, result )
         {
-            vscode.window.showInformationMessage( error ? ( "Failed to delete event: " + error ) : "Event deleted" );
+            vscode.window.showInformationMessage( error ? ( "Failed to remove event: " + error ) : "Event removed" );
             debug( "deleteEvent result: " + ( error ? error : JSON.stringify( result ) ) );
             if( !error )
             {

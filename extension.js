@@ -592,13 +592,13 @@ function activate( context )
             }
         } ) );
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.deleteEvent', function( node )
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.remove', function( node )
         {
             node = node ? node : selectedNode();
 
             if( calendarTree.isLocationNode( node ) )
             {
-                vscode.window.showInformationMessage( "Are you sure you want to delete this location?", 'Yes', 'No' ).then( function( confirm )
+                vscode.window.showInformationMessage( "Are you sure you want to remove this location?", 'Yes', 'No' ).then( function( confirm )
                 {
                     if( confirm === 'Yes' )
                     {
@@ -611,7 +611,7 @@ function activate( context )
             }
             else if( calendarTree.isEventNode( node ) )
             {
-                vscode.window.showInformationMessage( "Are you sure you want to delete this event?", 'Yes', 'No' ).then( function( confirm )
+                vscode.window.showInformationMessage( "Are you sure you want to remove this event?", 'Yes', 'No' ).then( function( confirm )
                 {
                     if( confirm === 'Yes' )
                     {

@@ -88,7 +88,7 @@
             ],
             "view/item/context": [
                 {
-                    "command": "calendar.deleteEvent",
+                    "command": "calendar.remove",
                     "when": "view =~ /calendar/ && viewItem =~ /canDelete/",
                     "group": "inline@2"
                 },
@@ -190,7 +190,7 @@
                 }
             },
             {
-                "command": "calendar.deleteEvent",
+                "command": "calendar.remove",
                 "title": "Remove",
                 "category": "Calendar",
                 "icon": {
