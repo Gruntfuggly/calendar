@@ -6,7 +6,7 @@
 # v0.0.5 - 2019-10-25
 - Handle all day events better
 - Handle multiple day events better
-- Add repeat reminders
+- Add repeat notifications
 - Allow locale to be overridden
 - Add support for adding/modifying locations
 

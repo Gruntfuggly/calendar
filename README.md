@@ -42,28 +42,26 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 
 ## Configuration
 
-| Setting                               | Default | Description                                                                                                     |
-|---------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------|
-| calendar.debug                        | false   | Enable a debug channel in the output view.                                                                      |
-| calendar.locale                       |         | Normally the locale is determined automatically. This allows it to be overridden if required.                   |
-| calendar.showInExplorer               | true    | If true, show the view in the explorer view.                                                                    |
-| calendar.maxEvents                    | 10      | Maximum number of future events to fetch from your calendar.                                                    |
-| calendar.historicDays                 | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                         |
-| calendar.showRelativeDates            | true    | Set to false to show full dates instead of **Today**, **Tomorrow**, etc.                                        |
-| calendar.autoRefreshInterval          | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing. |
-| calendar.reminderInterval             | 60      | Show a reminder of an event this number of minutes before it occurs. Set to zero to disable reminders.          |
-| calendar.reminderRepeatInterval       | 15      | After snoozing a reminder, repeat it after this number of minutes. Set to zero to disable repeated reminders.   |
-| calendar.showAllDayRemindersAtStartup | true    | If true, reminders for all day events occurring today and tomorrow will be shown.                               |
-| calendar.stickyReminders              | true    | Set to false to allow reminders to close automatically after a short period of time.                            |
-| calendar.google.enabled               | true    | Set to true to enable google calendar integration.                                                              |
-| calendar.google.credentialsFile       |         | Path to your credentials file.                                                                                  |
-| calendar.outlook.enabled              | false   | Set to true to enable outlook calendar integration.                                                             |
+| Setting                                   | Default | Description                                                                                                           |
+|-------------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------------|
+| calendar.debug                            | false   | Enable a debug channel in the output view.                                                                            |
+| calendar.locale                           |         | Normally the locale is determined automatically. This allows it to be overridden if required.                         |
+| calendar.showInExplorer                   | true    | If true, show the view in the explorer view.                                                                          |
+| calendar.maxEvents                        | 10      | Maximum number of future events to fetch from your calendar.                                                          |
+| calendar.historicDays                     | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                               |
+| calendar.showRelativeDates                | true    | Set to false to show full dates instead of **Today**, **Tomorrow**, etc.                                              |
+| calendar.autoRefreshInterval              | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing.       |
+| calendar.notificationInterval             | 60      | Show a notification of an event this number of minutes before it occurs. Set to zero to disable notifications.        |
+| calendar.notificationRepeatInterval       | 15      | After snoozing a notification, repeat it after this number of minutes. Set to zero to disable repeated notifications. |
+| calendar.showAllDayNotificationsAtStartup | true    | If true, notifications for all day events occurring today and tomorrow will be shown.                                 |
+| calendar.stickyNotifications              | true    | Set to false to allow notifications to close automatically after a short period of time.                              |
+| calendar.google.enabled                   | true    | Set to true to enable google calendar integration.                                                                    |
+| calendar.google.credentialsFile           |         | Path to your credentials file.                                                                                        |
+| calendar.outlook.enabled                  | false   | Set to true to enable outlook calendar integration.                                                                   |
 <!--
 | calendar.outlook.clientId     | | Your client ID for your outlook calendar     |
 | calendar.outlook.clientSecret | | Your client secret for your outlook calendar |
 -->
-
-*Note: Reminders are purely notifications in VSCode and are independent of your actual calendar reminders.*
 
 ## Donate
 
