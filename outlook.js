@@ -43,41 +43,65 @@ function fetch( populateTree, context, debug )
         }
         else if( action === ENTER_CODE )
         {
-            vscode.window.showInputBox( { prompt: "Please enter the generated token", placeHolder: "Token" } ).then( function( code )
+            vscode.window.showInputBox( { prompt: "Please enter the generated token", placeHolder: "Token" } ).then( async function( authCode )
             {
-                oauth2Client.getToken( code, function( error, token )
-                {
-                    if( error )
-                    {
-                        vscode.window.showErrorMessage( 'Error retrieving access token: ' + error );
-                    }
-                    else
-                    {
-                        oauth2Client.setCredentials( token );
-                        context.globalState.update( 'calendar.outlook.token', JSON.stringify( token ) );
-                        debug( "Token stored" );
-                        callback( oauth2Client );
-                    }
-                } );
+                var result = await oauth2Client.authorizationCode.getToken( {
+                    code: "{token:token}",
+                    redirect_uri: 'https://login.microsoftonline.com/common/oauth2/nativeclient',
+                    scope: 'openid profile User.Read Calendars.Read'
+                }, {} );
+                // , function( error, result )
+                // {
+                //     if( error )
+                //     {
+                //         console.log( error );
+                //     }
+                //     else
+                //     {
+                // console.log( JSON.stringify( x ) );
+                var token = oauth2Client.accessToken.create( result );
+                console.log( 'Token created: ', token.token );
+                // return token.token.access_token;
+                //     }
+                // } );
+
+
+                // var token = oauth2Client.accessToken.create( result );
+                // console.log( 'Token created: ', token.token );
+                // return token.token.access_token;
+                //     oauth2Client.getToken( code, function( error, token )
+                //     {
+                //         if( error )
+                //         {
+                //             vscode.window.showErrorMessage( 'Error retrieving access token: ' + error );
+                //         }
+                //         else
+                //         {
+                //             oauth2Client.setCredentials( token );
+                //             context.globalState.update( 'calendar.outlook.token', JSON.stringify( token ) );
+                //             debug( "Token stored" );
+                //             callback( oauth2Client );
+                //         }
+                //     } );
             } );
         }
     } );
 }
 
-async function getTokenFromCode( auth_code )
-{
-    let result = await oauth2Client.authorizationCode.getToken( {
-        code: auth_code,
-        redirect_uri: process.env.REDIRECT_URI,
-        scope: process.env.APP_SCOPES
-    } );
+// async function getTokenFromCode( auth_code )
+// {
+//     let result = await oauth2Client.authorizationCode.getToken( {
+//         code: auth_code,
+//         redirect_uri: process.env.REDIRECT_URI,
+//         scope: process.env.APP_SCOPES
+//     } );
 
-    const token = oauth2Client.accessToken.create( result );
-    console.log( 'Token created: ', token.token );
-    return token.token.access_token;
-}
+//     const token = oauth2Client.accessToken.create( result );
+//     console.log( 'Token created: ', token.token );
+//     return token.token.access_token;
+// }
 
-exports.getTokenFromCode = getTokenFromCode;
+// exports.getTokenFromCode = getTokenFromCode;
 exports.setCredentials = setCredentials;
 exports.getAuthUrl = getAuthUrl;
 exports.fetch = fetch;
