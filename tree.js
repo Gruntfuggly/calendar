@@ -298,7 +298,7 @@ class CalendarDataProvider
         vscode.commands.executeCommand( 'setContext', 'calendar-tree-has-content', dateNodes.length > 0 );
     }
 
-    setExpanded( date, expanded )
+    setExpanded( node, expanded )
     {
         var nodeId = node.startDate + ( node.endDate ? node.endDate : "" );
         expandedNodes[ nodeId ] = expanded;
