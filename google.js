@@ -323,7 +323,6 @@ function setLocation( callback, event, location )
 {
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
 
-    var updatedEvent = event;
     event.location = location;
 
     calendar.events.update(
@@ -331,7 +330,7 @@ function setLocation( callback, event, location )
             auth: oAuth2Client,
             calendarId: 'primary',
             eventId: event.id,
-            resource: updatedEvent
+            resource: event
         },
         function( error, result )
         {
@@ -350,6 +349,78 @@ function setLocation( callback, event, location )
     );
 }
 
+function deleteReminder( callback, event, reminderIndex )
+{
+    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+
+    event.reminders.overrides.splice( reminderIndex, 1 );
+
+    calendar.events.update(
+        {
+            auth: oAuth2Client,
+            calendarId: 'primary',
+            eventId: event.id,
+            resource: event
+        },
+        function( error, result )
+        {
+            if( error )
+            {
+                vscode.window.showInformationMessage( "Failed to update event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event updated - reminder removed" );
+                debug( JSON.stringify( result ) );
+                callback();
+            }
+        }
+    );
+}
+
+function setReminder( callback, event, reminderIndex, reminder )
+{
+    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+
+    if( reminderIndex !== undefined )
+    {
+        event.reminders.overrides[ reminderIndex ] = reminder;
+    }
+    else
+    {
+        if( !event.reminders.overrides )
+        {
+            event.reminders.useDefault = false;
+            event.reminders.overrides = [];
+        }
+        event.reminders.overrides.push( reminder );
+    }
+
+    calendar.events.update(
+        {
+            auth: oAuth2Client,
+            calendarId: 'primary',
+            eventId: event.id,
+            resource: event
+        },
+        function( error, result )
+        {
+            if( error )
+            {
+                vscode.window.showInformationMessage( "Failed to update event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event updated - reminder " + ( reminder.index ? "updated" : "added" ) );
+                debug( JSON.stringify( result ) );
+                callback();
+            }
+        }
+    );
+}
+
 module.exports.init = init;
 module.exports.fetch = fetch;
 module.exports.isAllDay = isAllDay;
@@ -357,3 +428,5 @@ module.exports.createEvent = createEvent;
 module.exports.editEvent = editEvent;
 module.exports.deleteEvent = deleteEvent;
 module.exports.setLocation = setLocation;
+module.exports.deleteReminder = deleteReminder;
+module.exports.setReminder = setReminder;

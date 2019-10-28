@@ -11,6 +11,16 @@ var OUTLOOK = 'OUTLOOK';
 var OK = 'OK';
 var IGNORE = 'Snooze';
 
+var chronoLocale = {
+    "en": "en",
+    "en-gb:": "en_GB",
+    "de": "de",
+    "pt": "pt",
+    "es": "es",
+    "fr": "fr",
+    "ja": "ja"
+};
+
 function isAllDay( parsedDateTime )
 {
     return parsedDateTime.length > 0 && Object.keys( parsedDateTime[ 0 ].tags ).filter( function( tag )
@@ -19,7 +29,7 @@ function isAllDay( parsedDateTime )
     } ).length === 0;
 }
 
-function showHint( type, parsedDateTime, status )
+function showEventHint( type, parsedDateTime, status )
 {
     var hint;
     var allDay = isAllDay( parsedDateTime );
@@ -50,6 +60,11 @@ function showHint( type, parsedDateTime, status )
     }
 
     status.text = hint;
+}
+
+function showReminderHint( type, parsedDateTime, status )
+{
+    status.text = type + " at " + utils.formattedTime( parsedDateTime[ 0 ].start.date() ) + " on " + parsedDateTime[ 0 ].start.date().toLocaleDateString( utils.getLocale() );
 }
 
 function activate( context )
@@ -251,7 +266,7 @@ function activate( context )
             {
                 events.map( function( event )
                 {
-                    debug( "Event:" + JSON.stringify( event ) );
+                    // debug( "Event:" + JSON.stringify( event ) );
                     calendarTree.add( event, GOOGLE );
                 } );
                 filterTree( context.workspaceState.get( 'calendar.filter' ) );
@@ -348,21 +363,21 @@ function activate( context )
         setContext();
     }
 
-    function getEventDateAndTime( callback, status, prompt, type, originalDateTimeText )
+    function getDateAndTime( callback, status, prompt, placeholder, type, originalDateTimeText, showHint, referenceDateTime )
     {
         vscode.window.showInputBox( {
             prompt: prompt,
-            placeHolder: "E.g., Tomorrow at 6.30pm",
+            placeHolder: placeholder,
             value: originalDateTimeText,
             validateInput: function( value )
             {
-                var parsedDateTime = chrono.parse( value, new Date(), { forwardDate: true } );
+                var parsedDateTime = chronoParser().parse( value, referenceDateTime ? referenceDateTime : new Date(), { forwardDate: true } );
                 if( parsedDateTime.length > 0 )
                 {
                     showHint( type, parsedDateTime, status );
                     return "";
                 }
-                status.text = type + " event...";
+                status.text = type + "...";
                 return "Date and time not understood (yet)";
             }
         } ).then( function( dateTime )
@@ -370,7 +385,7 @@ function activate( context )
             status.dispose();
             if( dateTime !== undefined )
             {
-                var parsedDateTime = chrono.parse( dateTime, new Date(), { forwardDate: true } );
+                var parsedDateTime = chronoParser().parse( dateTime, referenceDateTime ? referenceDateTime : new Date(), { forwardDate: true } );
                 if( parsedDateTime.length > 0 )
                 {
                     callback( parsedDateTime );
@@ -381,6 +396,17 @@ function activate( context )
                 }
             }
         } );
+    }
+
+    function chronoParser()
+    {
+        var localizedChrono = chronoLocale[ utils.getLocale() ];
+        var parser = chrono;
+        if( localizedChrono )
+        {
+            parser = chrono[ localizedChrono ];
+        }
+        return parser;
     }
 
     function setLocation( node )
@@ -398,6 +424,57 @@ function activate( context )
                 }
             }
         } );
+    }
+
+    function setReminder( node )
+    {
+        var status = vscode.window.createStatusBarItem();
+        status.text = "Setting reminder...";
+        status.show();
+
+        vscode.window.showQuickPick( [ "Email", "Browser Popup" ], {
+            placeHolder: "Type of reminder",
+        } ).then( function( method )
+        {
+            if( method )
+            {
+                var eventDateTime = new Date( node.event.start.date ? node.event.start.date : node.event.start.dateTime );
+
+                getDateAndTime( function( parsedDateTime )
+                {
+                    if( node.source === GOOGLE )
+                    {
+                        var methods = {
+                            "Browser Popup": "popup",
+                            "Email": "email"
+                        };
+                        var minutesBefore = ( eventDateTime.getTime() - new Date( parsedDateTime[ 0 ].start.date() ).getTime() ) / 60000;
+                        googleCalendar.setReminder( refresh, node.event, undefined, { method: methods[ method ], minutes: ~~minutesBefore } );
+                    }
+                }, status, "Please enter time for the reminder", "E.g., 2 hours earlier", "Setting reminder", undefined, showReminderHint, eventDateTime );
+            }
+        } );
+    }
+
+    function updateReminder( node )
+    {
+        var status = vscode.window.createStatusBarItem();
+        status.text = "Updating reminder...";
+        status.show();
+
+        var eventDateTime = new Date( node.event.start.date ? node.event.start.date : node.event.start.dateTime );
+        var reminder = node.event.reminders.overrides[ node.reminderIndex ];
+        var reminderDateTime = new Date( eventDateTime.getTime() - parseInt( reminder.minutes ) * 60000 );
+        var reminderDateTimeText = utils.formattedTime( reminderDateTime ) + " on " + reminderDateTime.toLocaleDateString( utils.getLocale() );
+
+        getDateAndTime( function( parsedDateTime )
+        {
+            if( node.source === GOOGLE )
+            {
+                var minutesBefore = ( eventDateTime.getTime() - new Date( parsedDateTime[ 0 ].start.date() ).getTime() ) / 60000;
+                googleCalendar.setReminder( refresh, node.event, node.reminderIndex, { method: reminder.method, minutes: ~~minutesBefore } );
+            }
+        }, status, "Please update the time for the reminder", "E.g., 10am the day before", "Updating reminder", reminderDateTimeText, showReminderHint, eventDateTime );
     }
 
     function selectedNode()
@@ -420,224 +497,249 @@ function activate( context )
         return result;
     }
 
-    function register()
+    function remove( node )
     {
-        vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
+        node = node ? node : selectedNode();
 
-        vscode.commands.registerCommand( 'calendar.open', function( node )
+        if( calendarTree.isLocationNode( node ) )
         {
-            debug( "Opening calendar, URL: " + node.url );
-            vscode.commands.executeCommand( 'vscode.open', vscode.Uri.parse( node.url ) );
-        } );
-
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', refresh ) );
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.refresh', refresh ) );
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.expand', expand ) );
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.collapse', collapse ) );
-
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.resetCache', function()
-        {
-            // function purgeFolder( folder )
-            // {
-            //     fs.readdir( folder, function(br err, files )
-            //     {
-            //         files.map( function( file )
-            //         {
-            //             fs.unlinkSync( path.join( folder, file ) );
-            //         } );
-            //     } );
-            // }
-
-            context.globalState.update( 'calendar.google.token', undefined );
-
-            context.workspaceState.update( 'calendar.expanded', undefined );
-            context.workspaceState.update( 'calendar.filter', undefined );
-            context.workspaceState.update( 'calendar.expandedNodes', undefined );
-
-            // purgeFolder( context.globalStoragePath );
-
-            debug( "Cache cleared" );
-
-            refresh();
-        } ) );
-
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.filter', function()
-        {
-            vscode.window.showInputBox( { prompt: "Filter the calendar" } ).then( function( term )
+            vscode.window.showInformationMessage( "Are you sure you want to remove this location?", 'Yes', 'No' ).then( function( confirm )
             {
-                context.workspaceState.update( 'calendar.filter', term ).then( function()
+                if( confirm === 'Yes' )
                 {
-                    filterTree( term );
-                } );
+                    if( node.source === GOOGLE )
+                    {
+                        googleCalendar.setLocation( refresh, node.event, "" );
+                    }
+                }
             } );
-        } ) );
+        }
+        else if( calendarTree.isReminderNode( node ) )
+        {
+            vscode.window.showInformationMessage( "Are you sure you want to remove this reminder?", 'Yes', 'No' ).then( function( confirm )
+            {
+                if( confirm === 'Yes' )
+                {
+                    if( node.source === GOOGLE )
+                    {
+                        googleCalendar.deleteReminder( refresh, node.event, node.reminderIndex );
+                    }
+                }
+            } );
+        }
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.createEvent', function()
+        else if( calendarTree.isEventNode( node ) )
+        {
+            vscode.window.showInformationMessage( "Are you sure you want to remove this event?", 'Yes', 'No' ).then( function( confirm )
+            {
+                if( confirm === 'Yes' )
+                {
+                    if( node.source === GOOGLE )
+                    {
+                        googleCalendar.deleteEvent( refresh, node.event.id );
+                        var acknowledgedNotifications = context.globalState.get( 'calendar.google.acknowledgedNotifications', {} );
+                        acknowledgedNotifications[ node.event.id ] = new Date();
+                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+                    }
+                }
+            } );
+        }
+        else
+        {
+            vscode.window.showInformationMessage( "Please select an event in the calendar" );
+        }
+    }
+
+    function edit( node )
+    {
+        node = node ? node : selectedNode();
+
+        if( calendarTree.isLocationNode( node ) )
+        {
+            setLocation( node );
+        }
+        else if( calendarTree.isReminderNode( node ) )
+        {
+            updateReminder( node );
+        }
+        else if( calendarTree.isEventNode( node ) )
         {
             var status = vscode.window.createStatusBarItem();
-            status.text = "Creating event...";
+            status.text = "Updating event...";
             status.show();
 
-            vscode.window.showInputBox( { prompt: "Please enter an event description" } ).then( function( summary )
+            vscode.window.showInputBox( {
+                prompt: "Please modify the event description, if required",
+                value: node.event.summary
+            } ).then( function( summary )
             {
                 if( summary )
                 {
-                    getEventDateAndTime( function( parsedDateTime )
+                    var originalDateTimeText = eventDateTimeText( node );
+
+                    getDateAndTime( function( parsedDateTime )
                     {
-                        var config = vscode.workspace.getConfiguration( 'calendar' );
+                        if( node.source === GOOGLE )
+                        {
+                            var end;
+                            if( parsedDateTime.length > 1 )
+                            {
+                                end = parsedDateTime[ 1 ].start.date();
+                            }
+                            else if( parsedDateTime[ 0 ].end )
+                            {
+                                end = parsedDateTime[ 0 ].end.date();
+                            }
+                            var eventDateTime = {
+                                start: parsedDateTime[ 0 ].start.date(),
+                                allDay: isAllDay( parsedDateTime ),
+                                end: end
+                            };
 
-                        debug( "parsed date and time: " + JSON.stringify( parsedDateTime, null, 2 ) );
-                        var eventDateTime = {
-                            start: parsedDateTime[ 0 ].start.date(),
-                            allDay: isAllDay( parsedDateTime )
-                        };
-                        if( parsedDateTime[ 0 ].end )
-                        {
-                            eventDateTime.end = parsedDateTime[ 0 ].end.date();
+                            googleCalendar.editEvent( refresh, node.event.id, summary, eventDateTime );
                         }
-                        else if( parsedDateTime.length > 1 )
-                        {
-                            eventDateTime.end = parsedDateTime[ 1 ].start.date();
-                        }
-
-                        if( config.get( 'google.enabled' ) )
-                        {
-                            googleCalendar.createEvent( refresh, summary, eventDateTime );
-                        }
-                    }, status, "Please enter the date and time of the event", "Creating" );
+                    }, status, "Please update the date and time of the event", "E.g., Tomorrow at 6.30pm", "Updating event", originalDateTimeText, showEventHint );
                 }
                 else
                 {
                     status.dispose();
                 }
             } );
-        } ) );
-
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.editEvent', function( node )
+        }
+        else
         {
-            node = node ? node : selectedNode();
+            vscode.window.showInformationMessage( "Please select an event in the calendar" );
+        }
+    }
 
-            if( calendarTree.isLocationNode( node ) )
+    function eventDateTimeText( node )
+    {
+        var allDay = node.event.start.date !== undefined;
+        var originalDateTime = new Date( allDay ? node.event.start.date : node.event.start.dateTime );
+        var originalDateTimeText = utils.dateLabel( originalDateTime );
+        if( !allDay )
+        {
+            originalDateTimeText += ' ' + originalDateTime.toLocaleTimeString( utils.getLocale() );
+            if( node.event.end.dateTime !== node.event.start.dateTime )
             {
-                setLocation( node );
+                originalDateTimeText += " until " + ( new Date( node.event.end.dateTime ) ).toLocaleTimeString( utils.getLocale() );
             }
-            else if( calendarTree.isEventNode( node ) )
+        }
+        else
+        {
+            if( node.event.end.date )
             {
-                var status = vscode.window.createStatusBarItem();
-                status.text = "Updating event...";
-                status.show();
-
-                vscode.window.showInputBox( {
-                    prompt: "Please modify the event description, if required",
-                    value: node.event.summary
-                } ).then( function( summary )
+                var endDate = new Date( node.event.end.date );
+                if( utils.daysFrom( originalDateTime, endDate ) > 1 )
                 {
-                    if( summary )
-                    {
-                        var allDay = node.event.start.date !== undefined;
-                        var originalDateTime = new Date( allDay ? node.event.start.date : node.event.start.dateTime );
-                        var originalDateTimeText = utils.dateLabel( originalDateTime );
-                        if( !allDay )
-                        {
-                            originalDateTimeText += ' ' + originalDateTime.toLocaleTimeString( utils.getLocale() );
-                            if( node.event.end.dateTime !== node.event.start.dateTime )
-                            {
-                                originalDateTimeText += " until " + ( new Date( node.event.end.dateTime ) ).toLocaleTimeString( utils.getLocale() );
-                            }
-                        }
-                        else
-                        {
-                            if( node.event.end.date )
-                            {
-                                var endDate = new Date( node.event.end.date );
-                                if( utils.daysFrom( originalDateTime, endDate ) > 1 )
-                                {
-                                    originalDateTimeText += " until " + utils.dateLabel( endDate.addDays( -1 ) );
-                                }
-                            }
-                        }
+                    originalDateTimeText += " until " + utils.dateLabel( endDate.addDays( -1 ) );
+                }
+            }
+        }
+        return originalDateTimeText;
+    }
 
-                        getEventDateAndTime( function( parsedDateTime )
-                        {
-                            if( node.source === GOOGLE )
-                            {
-                                var end;
-                                if( parsedDateTime.length > 1 )
-                                {
-                                    end = parsedDateTime[ 1 ].start.date();
-                                }
-                                else if( parsedDateTime[ 0 ].end )
-                                {
-                                    end = parsedDateTime[ 0 ].end.date();
-                                }
-                                var eventDateTime = {
-                                    start: parsedDateTime[ 0 ].start.date(),
-                                    allDay: isAllDay( parsedDateTime ),
-                                    end: end
-                                };
+    function createEvent()
+    {
+        var status = vscode.window.createStatusBarItem();
+        status.text = "Creating event...";
+        status.show();
 
-                                googleCalendar.editEvent( refresh, node.event.id, summary, eventDateTime );
-                            }
-                        }, status, "Please update the date and time of the event", "Updating", originalDateTimeText );
-                    }
-                    else
+        vscode.window.showInputBox( { prompt: "Please enter an event description" } ).then( function( summary )
+        {
+            if( summary )
+            {
+                getDateAndTime( function( parsedDateTime )
+                {
+                    var config = vscode.workspace.getConfiguration( 'calendar' );
+
+                    debug( "parsed date and time: " + JSON.stringify( parsedDateTime, null, 2 ) );
+                    var eventDateTime = {
+                        start: parsedDateTime[ 0 ].start.date(),
+                        allDay: isAllDay( parsedDateTime )
+                    };
+                    if( parsedDateTime[ 0 ].end )
                     {
-                        status.dispose();
+                        eventDateTime.end = parsedDateTime[ 0 ].end.date();
                     }
-                } );
+                    else if( parsedDateTime.length > 1 )
+                    {
+                        eventDateTime.end = parsedDateTime[ 1 ].start.date();
+                    }
+
+                    if( config.get( 'google.enabled' ) )
+                    {
+                        googleCalendar.createEvent( refresh, summary, eventDateTime );
+                    }
+                }, status, "Please enter the date and time of the event", "E.g., Friday at 4.15pm", "Creating event", undefined, showEventHint );
             }
             else
             {
-                vscode.window.showInformationMessage( "Please select an event in the calendar" );
+                status.dispose();
             }
-        } ) );
+        } );
+    }
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.remove', function( node )
+    function filter()
+    {
+        vscode.window.showInputBox( { prompt: "Filter the calendar" } ).then( function( term )
         {
-            node = node ? node : selectedNode();
-
-            if( calendarTree.isLocationNode( node ) )
+            context.workspaceState.update( 'calendar.filter', term ).then( function()
             {
-                vscode.window.showInformationMessage( "Are you sure you want to remove this location?", 'Yes', 'No' ).then( function( confirm )
-                {
-                    if( confirm === 'Yes' )
-                    {
-                        if( node.source === GOOGLE )
-                        {
-                            googleCalendar.setLocation( refresh, node.event, "" );
-                        }
-                    }
-                } );
-            }
-            else if( calendarTree.isEventNode( node ) )
-            {
-                vscode.window.showInformationMessage( "Are you sure you want to remove this event?", 'Yes', 'No' ).then( function( confirm )
-                {
-                    if( confirm === 'Yes' )
-                    {
-                        if( node.source === GOOGLE )
-                        {
-                            googleCalendar.deleteEvent( refresh, node.event.id );
-                            var acknowledgedNotifications = context.globalState.get( 'calendar.google.acknowledgedNotifications', {} );
-                            acknowledgedNotifications[ node.event.id ] = new Date();
-                            context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
-                        }
-                    }
-                } );
-            }
-            else
-            {
-                vscode.window.showInformationMessage( "Please select an event in the calendar" );
-            }
-        } ) );
+                filterTree( term );
+            } );
+        } );
+    }
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setLocation', setLocation ) );
+    function resetCache()
+    {
+        // function purgeFolder( folder )
+        // {
+        //     fs.readdir( folder, function(br err, files )
+        //     {
+        //         files.map( function( file )
+        //         {
+        //             fs.unlinkSync( path.join( folder, file ) );
+        //         } );
+        //     } );
+        // }
 
-        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setReminder', function( e )
-        {
-        } ) );
+        context.globalState.update( 'calendar.google.token', undefined );
 
+        context.workspaceState.update( 'calendar.expanded', undefined );
+        context.workspaceState.update( 'calendar.filter', undefined );
+        context.workspaceState.update( 'calendar.expandedNodes', undefined );
+
+        // purgeFolder( context.globalStoragePath );
+
+        debug( "Cache cleared" );
+
+        refresh();
+    }
+
+    function openInBrowser( node )
+    {
+        debug( "Opening calendar, URL: " + node.url );
+        vscode.commands.executeCommand( 'vscode.open', vscode.Uri.parse( node.url ) );
+    }
+
+    function register()
+    {
+        vscode.window.registerTreeDataProvider( 'calendar', calendarTree );
+
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.open', openInBrowser ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.authorize', refresh ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.refresh', refresh ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.expand', expand ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.collapse', collapse ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.resetCache', resetCache ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.filter', filter ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.clearFilter', clearFilter ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.createEvent', createEvent ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.edit', edit ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.remove', remove ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setLocation', setLocation ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setReminder', setReminder ) );
 
         context.subscriptions.push( calendarViewExplorer.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element, true ); } ) );
         context.subscriptions.push( calendarView.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element, true ); } ) );

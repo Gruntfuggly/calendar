@@ -10,6 +10,7 @@ var nodeCounter = 1;
 var DATE = "DATE";
 var EVENT = "EVENT";
 var LOCATION = "LOCATION";
+var REMINDER = "REMINDER";
 
 Date.prototype.withoutTime = function()
 {
@@ -26,6 +27,11 @@ var isVisible = function( node )
 var sortByDate = function( a, b )
 {
     return new Date( a.startDate ) - new Date( b.startDate );
+};
+
+var sortByReminderTime = function( a, b )
+{
+    return a.minutesBefore - b.minutesBefore;
 };
 
 function newNodeId()
@@ -156,7 +162,7 @@ class CalendarDataProvider
             return node.startDate === this.startDate && node.endDate === this.endDate;
         }
 
-        console.log( JSON.stringify( event, null, 2 ) );
+        // console.log( JSON.stringify( event, null, 2 ) );
         var now = new Date();
         var isAllDay = event.start.date !== undefined;
         var startDate = new Date( isAllDay ? event.start.date : event.start.dateTime );
@@ -225,11 +231,36 @@ class CalendarDataProvider
             tooltip: tooltip,
             visible: true,
             icon: isAllDay ? 'calendar' : 'time',
-            contextValue: 'canEdit canDelete canOpen',
+            contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder',
             source: source,
             isPast: startDate.getTime() < now.getTime(),
             nodes: []
         };
+
+        if( event.reminders && !event.reminders.useDefault && event.reminders.overrides )
+        {
+            event.reminders.overrides.map( function( reminder, index )
+            {
+                var reminderDateTime = new Date( startDate.getTime() - reminder.minutes * 60000 );
+                var reminderNode = {
+                    type: REMINDER,
+                    event: event,
+                    label: "Reminder by " + reminder.method + " at " + utils.formattedTime( reminderDateTime ) + " on " + reminderDateTime.toLocaleDateString( utils.getLocale() ),
+                    id: newNodeId(),
+                    visible: true,
+                    icon: 'reminder',
+                    contextValue: 'canEdit canDelete canSetReminder',
+                    minutesBefore: parseInt( reminder.minutes ),
+                    reminderIndex: index,
+                    source: source,
+                    isPast: startDate.getTime() < now.getTime()
+                };
+
+                eventNode.nodes.push( reminderNode );
+            } );
+
+            eventNode.nodes.sort( sortByReminderTime ).reverse();
+        }
 
         if( event.location )
         {
@@ -240,7 +271,7 @@ class CalendarDataProvider
                 id: newNodeId(),
                 visible: true,
                 icon: 'location',
-                contextValue: 'canEdit canDelete',
+                contextValue: 'canEdit canDelete canSetLocation',
                 source: source,
                 isPast: startDate.getTime() < now.getTime(),
             }
@@ -354,6 +385,11 @@ class CalendarDataProvider
     isEventNode( node )
     {
         return node && node.type === EVENT;
+    }
+
+    isReminderNode( node )
+    {
+        return node && node.type === REMINDER;
     }
 
     isLocationNode( node )

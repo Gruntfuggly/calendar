@@ -1,6 +1,6 @@
 var vscode = require( 'vscode' );
 
-var localeRegex = new RegExp( '^[a-z]{2}(\-[a-z]{2})*$', 'i' );
+var localeRegex = new RegExp( '^[a-z]{2}([\-][a-z]{2})*$', 'i' );
 
 function isValidLocale( locale )
 {

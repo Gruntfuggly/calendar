@@ -93,7 +93,7 @@
                     "group": "inline@2"
                 },
                 {
-                    "command": "calendar.editEvent",
+                    "command": "calendar.edit",
                     "when": "view =~ /calendar/ && viewItem =~ /canEdit/",
                     "group": "inline@1"
                 },
@@ -103,11 +103,11 @@
                 },
                 {
                     "command": "calendar.setLocation",
-                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
+                    "when": "view =~ /calendar/ && viewItem =~ /canSetLocation/"
                 },
                 {
                     "command": "calendar.setReminder",
-                    "when": "view =~ /calendar/ && viewItem =~ /canEdit/"
+                    "when": "view =~ /calendar/ && viewItem =~ /canSetReminder/"
                 }
             ]
         },
@@ -181,7 +181,7 @@
                 }
             },
             {
-                "command": "calendar.editEvent",
+                "command": "calendar.edit",
                 "title": "Change",
                 "category": "Calendar",
                 "icon": {
