@@ -9,7 +9,6 @@ events to be created, modified and deleted.
 
 ## TODO
 
-- [ ] Support for editting reminders
 - [ ] Support for Outlook calendars
 
 ## Installing
@@ -23,14 +22,14 @@ Alternatively, open Visual Studio code, press `Ctrl+P` or `Cmd+P` and type:
 ### Google calendar authorization
 
 1. Visit https://developers.google.com/calendar/quickstart/nodejs
-2. click the **Enable the Google Calendar API** button in *Step 1*.
-3. click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere.
-4. update the `calendar.google.credentialsFile` setting to point to the saved file.
-5. press F1 and run the command **Calendar: Authorize**
-6. click the **Get Authorization Code** button and follow the instructions in your browser. *Note: Google will warn you that the application is not trusted, but you're the only person who will be accessing your calendar.*
-7. copy the code that google generates.
-8. press F1 and run the command **Calendar: Authorize** again.
-9. click the **Enter Authorization Code** and paste in the code that google gave you.
+2. Click the **Enable the Google Calendar API** button in *Step 1*.
+3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere.
+4. Update the `calendar.google.credentialsFile` setting to point to the saved file.
+5. Press F1 and run the command **Calendar: Authorize**
+6. Click the **Get Authorization Code** button and follow the instructions in your browser. *Note: Google will warn you that the application is not verified, but you're the only person who will be accessing your calendar. Click* **Advanced** *and then click* **Go to Quickstart (unsafe)**.
+7. Copy the code that google generates.
+8. Press F1 and run the command **Calendar: Authorize** again.
+9. Click the **Enter Authorization Code** and paste in the code that google gave you.
 
 ### Outlook calendar authorization
 
@@ -53,7 +52,7 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.autoRefreshInterval              | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing.       |
 | calendar.notificationInterval             | 60      | Show a notification of an event this number of minutes before it occurs. Set to zero to disable notifications.        |
 | calendar.notificationRepeatInterval       | 15      | After snoozing a notification, repeat it after this number of minutes. Set to zero to disable repeated notifications. |
-| calendar.showAllDayNotificationsAtStartup | true    | If true, notifications for all day events occurring today and tomorrow will be shown.                                 |
+| calendar.showAllDayNotificationsAtStartup | true    | If true, notifications for all day events occurring today and tomorrow will be shown when you start vscode.           |
 | calendar.stickyNotifications              | true    | Set to false to allow notifications to close automatically after a short period of time.                              |
 | calendar.google.enabled                   | true    | Set to true to enable google calendar integration.                                                                    |
 | calendar.google.credentialsFile           |         | Path to your credentials file.                                                                                        |
@@ -62,6 +61,10 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.outlook.clientId     | | Your client ID for your outlook calendar     |
 | calendar.outlook.clientSecret | | Your client secret for your outlook calendar |
 -->
+
+## Known Issues
+
+The awesome [chrono-node](https://www.npmjs.com/package/chrono-node) module used to convert human readable dates into actual dates supports **en**, **en-gb**, **de**, **pt**, **es**, **fr**, and **ja** locales. The extension will still work with other locales, and should display them correctly, but you may have odd results when creating or modifying events and reminders.
 
 ## Donate
 
