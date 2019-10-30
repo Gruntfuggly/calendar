@@ -11,16 +11,6 @@ var OUTLOOK = 'OUTLOOK';
 var OK = 'OK';
 var IGNORE = 'Snooze';
 
-var chronoLocale = {
-    "en": "en",
-    "en-gb:": "en_GB",
-    "de": "de",
-    "pt": "pt",
-    "es": "es",
-    "fr": "fr",
-    "ja": "ja"
-};
-
 function isAllDay( parsedDateTime )
 {
     return parsedDateTime.length > 0 && Object.keys( parsedDateTime[ 0 ].tags ).filter( function( tag )
@@ -264,9 +254,9 @@ function activate( context )
         {
             googleCalendar.fetch( function( events )
             {
+                debug( "Found " + events.length + " events" );
                 events.map( function( event )
                 {
-                    // debug( "Event:" + JSON.stringify( event ) );
                     calendarTree.add( event, GOOGLE );
                 } );
                 filterTree( context.workspaceState.get( 'calendar.filter' ) );
@@ -400,6 +390,16 @@ function activate( context )
 
     function chronoParser()
     {
+        var chronoLocale = {
+            "en": "en",
+            "en-gb:": "en_GB",
+            "de": "de",
+            "pt": "pt",
+            "es": "es",
+            "fr": "fr",
+            "ja": "ja"
+        };
+
         var localizedChrono = chronoLocale[ utils.getLocale() ];
         var parser = chrono;
         if( localizedChrono )
