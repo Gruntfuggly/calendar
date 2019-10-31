@@ -1,7 +1,9 @@
+# v0.0.6 - 2019-10-31
 - Fix filtering
 - Refresh on window focus if autoRefresh is enabled
 - Add open event in browser
 - Include end date in nodes to prevent events merging
+- Allow adding/modification of reminders
 
 # v0.0.5 - 2019-10-25
 - Handle all day events better
