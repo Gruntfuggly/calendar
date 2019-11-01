@@ -57,10 +57,6 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.google.enabled                   | true    | Set to true to enable google calendar integration.                                                                    |
 | calendar.google.credentialsFile           |         | Path to your credentials file.                                                                                        |
 | calendar.outlook.enabled                  | false   | Set to true to enable outlook calendar integration.                                                                   |
-<!--
-| calendar.outlook.clientId     | | Your client ID for your outlook calendar     |
-| calendar.outlook.clientSecret | | Your client secret for your outlook calendar |
--->
 
 ## Known Issues
 
