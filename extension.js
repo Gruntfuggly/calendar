@@ -231,16 +231,15 @@ function activate( context )
                     var millisecondsUntilNotification = notificationTime - now.getTime();
                     if( millisecondsUntilNotification > ( -notificationInterval * 60000 ) && millisecondsUntilNotification < 86400000 )
                     {
-                        if( notifications[ event.id ] !== undefined )
+                        if( notifications[ event.id ] === undefined )
                         {
-                            clearTimeout( notifications[ event.id ] );
-                        }
-                        if( millisecondsUntilNotification > 0 )
-                        {
-                            debug( "Scheduling notification for " + event.summary + " in " + ( millisecondsUntilNotification / 60000 ).toFixed( 1 ) + " minutes" );
-                        }
+                            if( millisecondsUntilNotification > 0 )
+                            {
+                                debug( "Scheduling notification for " + event.summary + " in " + ( millisecondsUntilNotification / 60000 ).toFixed( 1 ) + " minutes" );
+                            }
 
-                        notifications[ event.id ] = setTimeout( showNotification, millisecondsUntilNotification, event );
+                            notifications[ event.id ] = setTimeout( showNotification, millisecondsUntilNotification, event );
+                        }
                     }
                 }
             } );

@@ -1,3 +1,5 @@
+- Don't show snoozed notifications on window focus
+
 # v0.0.6 - 2019-10-31
 - Fix filtering
 - Refresh on window focus if autoRefresh is enabled
