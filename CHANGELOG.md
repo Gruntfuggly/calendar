@@ -1,3 +1,4 @@
+# v0.0.7 - 2019-11-01
 - Don't show snoozed notifications on window focus
 
 # v0.0.6 - 2019-10-31
