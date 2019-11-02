@@ -118,20 +118,23 @@ function fetch( populateTree, context )
             {
                 vscode.window.showInputBox( { prompt: "Please enter the generated token", placeHolder: "Token" } ).then( function( code )
                 {
-                    oAuth2Client.getToken( code, function( error, token )
+                    if( code )
                     {
-                        if( error )
+                        oAuth2Client.getToken( code, function( error, token )
                         {
-                            vscode.window.showErrorMessage( 'Error retrieving access token: ' + error );
-                        }
-                        else
-                        {
-                            oAuth2Client.setCredentials( token );
-                            context.globalState.update( 'calendar.google.token', JSON.stringify( token ) );
-                            debug( "Token stored" );
-                            callback();
-                        }
-                    } );
+                            if( error )
+                            {
+                                vscode.window.showErrorMessage( 'Error retrieving access token: ' + error );
+                            }
+                            else
+                            {
+                                oAuth2Client.setCredentials( token );
+                                context.globalState.update( 'calendar.google.token', JSON.stringify( token ) );
+                                debug( "Token stored" );
+                                callback();
+                            }
+                        } );
+                    }
                 } );
             }
         } );
