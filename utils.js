@@ -2,6 +2,20 @@ var vscode = require( 'vscode' );
 
 var localeRegex = new RegExp( '^[a-z]{2}([\-][a-z]{2})*$', 'i' );
 
+Date.prototype.withoutTime = function()
+{
+    var d = new Date( this );
+    d.setHours( 0, 0, 0, 0 );
+    return d;
+};
+
+Date.prototype.addDays = function( days )
+{
+    var date = new Date( this.valueOf() );
+    date.setDate( date.getDate() + days );
+    return date;
+};
+
 function isValidLocale( locale )
 {
     return locale.match( localeRegex );
@@ -17,19 +31,12 @@ function getLocale()
     return vscode.env.language;
 }
 
-Date.prototype.withoutTime = function()
+function toISODate( date )
 {
-    var d = new Date( this );
-    d.setHours( 0, 0, 0, 0 );
-    return d;
-};
-
-Date.prototype.addDays = function( days )
-{
-    var date = new Date( this.valueOf() );
-    date.setDate( date.getDate() + days );
-    return date;
-};
+    var offset = date.getTimezoneOffset();
+    var adjustedDate = new Date( date.getTime() + ( offset * 60 * 1000 ) );
+    return adjustedDate.toISOString().split( 'T' )[ 0 ];
+}
 
 function daysFrom( startDate, endDate )
 {
@@ -117,6 +124,7 @@ function formattedTime( date )
 
 module.exports.isValidLocale = isValidLocale;
 module.exports.getLocale = getLocale;
+module.exports.toISODate = toISODate;
 module.exports.daysFrom = daysFrom;
 module.exports.isToday = isToday;
 module.exports.isTomorrow = isTomorrow;

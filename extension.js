@@ -10,6 +10,7 @@ var GOOGLE = 'GOOGLE';
 var OUTLOOK = 'OUTLOOK';
 var OK = 'OK';
 var IGNORE = 'Snooze';
+var BUMP = "Bump";
 
 function isAllDay( parsedDateTime )
 {
@@ -123,6 +124,19 @@ function activate( context )
 
     function showAllDayNotifications( events )
     {
+        function buttonClicked( button, event )
+        {
+            if( button === OK )
+            {
+                acknowledgedNotifications[ event.id ] = date;
+                context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+            }
+            else if( button == BUMP )
+            {
+                bumpEvent( event );
+            }
+        }
+
         if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showAllDayNotificationsAtStartup' ) )
         {
             events.map( function( event )
@@ -139,18 +153,11 @@ function activate( context )
                             var label = isToday ? "Today" : "Tomorrow";
                             if( vscode.workspace.getConfiguration( 'calendar' ).get( 'stickyNotifications' ) )
                             {
-                                vscode.window.showErrorMessage( label + ": " + event.summary, OK ).then( function( button )
-                                {
-                                    if( button === OK )
-                                    {
-                                        acknowledgedNotifications[ event.id ] = date;
-                                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
-                                    }
-                                } );
+                                vscode.window.showErrorMessage( label + ": " + event.summary, OK, BUMP ).then( function( button ) { buttonClicked( button, event ); } );
                             }
                             else
                             {
-                                vscode.window.showInformationMessage( label + ": " + event.summary );
+                                vscode.window.showInformationMessage( label + ": " + event.summary, OK, BUMP ).then( function( button ) { buttonClicked( button, event ); } );
                             }
                         }
                     }
@@ -162,6 +169,32 @@ function activate( context )
 
     function showNotification( event )
     {
+        function buttonClicked( button, event )
+        {
+            if( button === OK )
+            {
+                acknowledgedNotifications[ event.id ] = eventTime;
+                context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+            }
+            else if( button === IGNORE )
+            {
+                var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
+                if( repeatIntervalInMilliseconds > 0 )
+                {
+                    var now = new Date();
+                    var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
+                    if( nextNotification < eventTime.getTime() )
+                    {
+                        scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
+                    }
+                }
+            }
+            else if( button === BUMP )
+            {
+                bumpEvent( event );
+            }
+        }
+
         var config = vscode.workspace.getConfiguration( 'calendar' );
 
         var acknowledgedNotifications = context.globalState.get( 'calendar.google.acknowledgedNotifications', {} );
@@ -173,31 +206,11 @@ function activate( context )
 
             if( config.get( 'stickyNotifications' ) )
             {
-                vscode.window.showErrorMessage( text, OK, IGNORE ).then( function( button )
-                {
-                    if( button === OK )
-                    {
-                        acknowledgedNotifications[ event.id ] = eventTime;
-                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
-                    }
-                    else
-                    {
-                        var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
-                        if( repeatIntervalInMilliseconds > 0 )
-                        {
-                            var now = new Date();
-                            var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
-                            if( nextNotification < eventTime.getTime() )
-                            {
-                                scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
-                            }
-                        }
-                    }
-                } );
+                vscode.window.showErrorMessage( text, OK, IGNORE, BUMP ).then( function( button ) { buttonClicked( button, event ); } );
             }
             else
             {
-                vscode.window.showInformationMessage( text );
+                vscode.window.showInformationMessage( text, OK, IGNORE, BUMP ).then( function( button ) { buttonClicked( button, event ); } );
             }
         }
     }
@@ -244,6 +257,22 @@ function activate( context )
                 }
             } );
         }
+    }
+
+    function bumpEvent( event )
+    {
+        if( event.start.date )
+        {
+            event.start.date = utils.toISODate( new Date( event.start.date ).addDays( 1 ) );
+            event.end.date = utils.toISODate( new Date( event.end.date ).addDays( 1 ) );
+        }
+        if( event.start.dateTime )
+        {
+            event.start.dateTime = new Date( event.start.dateTime ).addDays( 1 ).toISOString();
+            event.end.dateTime = new Date( event.end.dateTime ).addDays( 1 ).toISOString();
+        }
+
+        googleCalendar.updateEvent( refresh, event );
     }
 
     function fetch()

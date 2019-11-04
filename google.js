@@ -173,13 +173,6 @@ function isAllDay( event )
     return event.start.date !== undefined;
 }
 
-function toISODate( date )
-{
-    var offset = date.getTimezoneOffset();
-    var adjustedDate = new Date( date.getTime() + ( offset * 60 * 1000 ) );
-    return adjustedDate.toISOString().split( 'T' )[ 0 ];
-}
-
 function createEvent( callback, summary, eventDateTime )
 {
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
@@ -240,7 +233,6 @@ function createEvent( callback, summary, eventDateTime )
 
 function editEvent( callback, eventId, summary, eventDateTime )
 {
-    debug( "edt:" + JSON.stringify( eventDateTime ) );
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
     var updatedEvent;
 
@@ -279,6 +271,35 @@ function editEvent( callback, eventId, summary, eventDateTime )
             calendarId: 'primary',
             eventId: eventId,
             resource: updatedEvent
+        },
+        function( error, result )
+        {
+            if( error )
+            {
+                vscode.window.showInformationMessage( "Failed to update event: " + error );
+                debug( error );
+            }
+            else
+            {
+                vscode.window.showInformationMessage( "Event updated" );
+                debug( JSON.stringify( result ) );
+                callback();
+            }
+        }
+    );
+}
+
+function updateEvent( callback, event )
+{
+    var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
+    debug( "requested event: " + JSON.stringify( event ) );
+
+    calendar.events.update(
+        {
+            auth: oAuth2Client,
+            calendarId: 'primary',
+            eventId: event.id,
+            resource: event
         },
         function( error, result )
         {
@@ -426,6 +447,7 @@ module.exports.fetch = fetch;
 module.exports.isAllDay = isAllDay;
 module.exports.createEvent = createEvent;
 module.exports.editEvent = editEvent;
+module.exports.updateEvent = updateEvent;
 module.exports.deleteEvent = deleteEvent;
 module.exports.setLocation = setLocation;
 module.exports.deleteReminder = deleteReminder;
