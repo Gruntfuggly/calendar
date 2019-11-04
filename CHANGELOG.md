@@ -1,3 +1,5 @@
+- Add command to bump event to the next day
+
 # v0.0.7 - 2019-11-01
 - Don't show snoozed notifications on window focus
 

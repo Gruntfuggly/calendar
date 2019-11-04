@@ -108,6 +108,10 @@
                 {
                     "command": "calendar.setReminder",
                     "when": "view =~ /calendar/ && viewItem =~ /canSetReminder/"
+                },
+                {
+                    "command": "calendar.bumpEvent",
+                    "when": "view =~ /calendar/ && viewItem =~ /canBump/"
                 }
             ]
         },
@@ -219,6 +223,11 @@
             {
                 "command": "calendar.open",
                 "title": "Open in Browser",
+                "category": "Calendar"
+            },
+            {
+                "command": "calendar.bumpEvent",
+                "title": "Bump Event To Next Day",
                 "category": "Calendar"
             }
         ],

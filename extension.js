@@ -170,25 +170,25 @@ function activate( context )
     function showNotification( event )
     {
         function buttonClicked( button, event )
-        {
-            if( button === OK )
-            {
-                acknowledgedNotifications[ event.id ] = eventTime;
-                context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
-            }
-            else if( button === IGNORE )
-            {
-                var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
-                if( repeatIntervalInMilliseconds > 0 )
                 {
-                    var now = new Date();
-                    var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
-                    if( nextNotification < eventTime.getTime() )
+                    if( button === OK )
                     {
-                        scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
+                        acknowledgedNotifications[ event.id ] = eventTime;
+                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
                     }
-                }
-            }
+            else if( button === IGNORE )
+                    {
+                        var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
+                        if( repeatIntervalInMilliseconds > 0 )
+                        {
+                            var now = new Date();
+                            var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
+                            if( nextNotification < eventTime.getTime() )
+                            {
+                                scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
+                            }
+                        }
+                    }
             else if( button === BUMP )
             {
                 bumpEvent( event );
@@ -261,6 +261,26 @@ function activate( context )
 
     function bumpEvent( event )
     {
+        if( event.start.date )
+        {
+            event.start.date = utils.toISODate( new Date( event.start.date ).addDays( 1 ) );
+            event.end.date = utils.toISODate( new Date( event.end.date ).addDays( 1 ) );
+        }
+        if( event.start.dateTime )
+        {
+            event.start.dateTime = new Date( event.start.dateTime ).addDays( 1 ).toISOString();
+            event.end.dateTime = new Date( event.end.dateTime ).addDays( 1 ).toISOString();
+        }
+
+        googleCalendar.updateEvent( refresh, event );
+    }
+
+    function bumpEvent( node )
+    {
+        node = node ? node : selectedNode();
+
+        var event = node.event;
+
         if( event.start.date )
         {
             event.start.date = utils.toISODate( new Date( event.start.date ).addDays( 1 ) );
@@ -439,6 +459,8 @@ function activate( context )
 
     function setLocation( node )
     {
+        node = node ? node : selectedNode();
+
         vscode.window.showInputBox( {
             prompt: "Please enter the event location",
             value: node.event.location
@@ -456,6 +478,8 @@ function activate( context )
 
     function setReminder( node )
     {
+        node = node ? node : selectedNode();
+
         var status = vscode.window.createStatusBarItem();
         status.text = "Setting reminder...";
         status.show();
@@ -768,6 +792,7 @@ function activate( context )
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.remove', remove ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setLocation', setLocation ) );
         context.subscriptions.push( vscode.commands.registerCommand( 'calendar.setReminder', setReminder ) );
+        context.subscriptions.push( vscode.commands.registerCommand( 'calendar.bumpEvent', bumpEvent ) );
 
         context.subscriptions.push( calendarViewExplorer.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element, true ); } ) );
         context.subscriptions.push( calendarView.onDidExpandElement( function( e ) { calendarTree.setExpanded( e.element, true ); } ) );

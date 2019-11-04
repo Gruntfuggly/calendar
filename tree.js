@@ -177,7 +177,7 @@ class CalendarDataProvider
             startDate: startDate.withoutTime().toISOString(),
             endDate: endDate ? endDate.withoutTime().toISOString() : undefined
         } );
-
+        console.log( event.summary + " " + startDate.withoutTime().toISOString(), + " " + ( endDate ? endDate.withoutTime().toISOString() : undefined ) );
         if( !dateNode || multipleDays )
         {
             dateNode = {
@@ -231,7 +231,7 @@ class CalendarDataProvider
             tooltip: tooltip,
             visible: true,
             icon: isAllDay ? 'calendar' : 'time',
-            contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder',
+            contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder canBump',
             source: source,
             isPast: startDate.getTime() < now.getTime(),
             nodes: []
