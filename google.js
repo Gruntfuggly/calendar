@@ -179,6 +179,8 @@ function isAllDay( event )
 
 function createEvent( callback, summary, eventDateTime )
 {
+    var configuration = vscode.workspace.getConfiguration( 'calendar' );
+
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
     var newEvent;
 
@@ -207,6 +209,11 @@ function createEvent( callback, summary, eventDateTime )
                 dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start
             }
         };
+    }
+
+    if( configuration.get( 'google.useDefaultReminders', true ) === false )
+    {
+        newEvent.reminders = { useDefault: false };
     }
 
     debug( "requested event: " + JSON.stringify( newEvent ) );

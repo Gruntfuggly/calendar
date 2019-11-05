@@ -56,6 +56,7 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.stickyNotifications              | true    | Set to false to allow notifications to close automatically after a short period of time.                              |
 | calendar.google.enabled                   | true    | Set to true to enable google calendar integration.                                                                    |
 | calendar.google.credentialsFile           |         | Path to your credentials file.                                                                                        |
+| calendar.google.useDefaultReminders       | true    | Set to false to inhibit the default reminders when creating new events.                                               |
 | calendar.outlook.enabled                  | false   | Set to true to enable outlook calendar integration.                                                                   |
 
 ## Known Issues

@@ -299,6 +299,11 @@
                     "default": "",
                     "markdownDescription": "1. Visit https://developers.google.com/calendar/quickstart/nodejs\n2. Click the **Enable the Google Calendar API** button in Step 1\n3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere\n4. Enter the path to the file below"
                 },
+                "calendar.google.useDefaultReminders": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Set to false to inhibit the default reminders when creating new events"
+                },
                 "calendar.outlook.enabled": {
                     "type": "boolean",
                     "default": false,
