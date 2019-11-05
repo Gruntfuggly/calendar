@@ -1,3 +1,4 @@
+# v0.0.8 - 2019-11-05
 - Add option to override default reminders
 - Add command to bump event to the next day
 
