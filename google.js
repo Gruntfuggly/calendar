@@ -254,10 +254,10 @@ function editEvent( callback, eventId, summary, eventDateTime )
             // location: '800 Howard St., San Francisco, CA 94103',
             // description: "A chance to hear more about Google's developer products.",
             start: {
-                date: toISODate( eventDateTime.start )
+                date: utils.toISODate( eventDateTime.start )
             },
             end: {
-                date: toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) )
+                date: utils.toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) )
             }
         };
     }

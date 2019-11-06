@@ -159,10 +159,9 @@ class CalendarDataProvider
     {
         function findDate( node )
         {
-            return node.startDate === this.startDate && node.endDate === this.endDate;
+            return node.label === this.label;
         }
 
-        // console.log( JSON.stringify( event, null, 2 ) );
         var now = new Date();
         var isAllDay = event.start.date !== undefined;
         var startDate = new Date( isAllDay ? event.start.date : event.start.dateTime );
@@ -172,12 +171,13 @@ class CalendarDataProvider
             endDate = ( new Date( event.end.date ) ).addDays( -1 );
         }
         var multipleDays = event.end.date && utils.daysFrom( startDate, new Date( event.end.date ) ) > 1;
-
+        var dateLabel = utils.dateLabel( startDate );
         var dateNode = dateNodes.find( findDate, {
-            startDate: startDate.withoutTime().toISOString(),
-            endDate: endDate ? endDate.withoutTime().toISOString() : undefined
+            label: dateLabel
         } );
-        console.log( event.summary + " " + startDate.withoutTime().toISOString(), + " " + ( endDate ? endDate.withoutTime().toISOString() : undefined ) );
+
+        var isDatePast = startDate.withoutTime() < now.withoutTime();
+
         if( !dateNode || multipleDays )
         {
             dateNode = {
@@ -185,11 +185,11 @@ class CalendarDataProvider
                 startDate: startDate.withoutTime().toISOString(),
                 endDate: endDate ? endDate.withoutTime().toISOString() : undefined,
                 id: newNodeId(),
-                label: utils.dateLabel( startDate ),
+                label: dateLabel,
                 nodes: [],
                 visible: true,
                 icon: 'calendar',
-                isPast: startDate.withoutTime() < now.withoutTime(),
+                isPast: isDatePast,
                 tooltip: utils.fullDateLabel( startDate, true )
             };
 
@@ -222,6 +222,8 @@ class CalendarDataProvider
 
         label += event.summary;
 
+        var isEventPast = isDatePast || ( !isAllDay && startDate.getTime() < now.getTime() );
+
         var eventNode = {
             type: EVENT,
             event: event,
@@ -233,7 +235,7 @@ class CalendarDataProvider
             icon: isAllDay ? 'calendar' : 'time',
             contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder canBump',
             source: source,
-            isPast: startDate.getTime() < now.getTime(),
+            isPast: isEventPast,
             nodes: []
         };
 
