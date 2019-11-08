@@ -94,6 +94,13 @@ function activate( context )
         }
     }
 
+    function acknowledgeNotification( event )
+    {
+        var acknowledgedNotifications = context.globalState.get( 'calendar.google.acknowledgedNotifications', {} );
+        acknowledgedNotifications[ event.id ] = new Date();
+        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+    }
+
     function purgeAcknowledgedNotifications()
     {
         var now = new Date();
@@ -128,8 +135,7 @@ function activate( context )
         {
             if( button === OK )
             {
-                acknowledgedNotifications[ event.id ] = date;
-                context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+                acknowledgeNotification( event );
             }
             else if( button == BUMP )
             {
@@ -170,25 +176,24 @@ function activate( context )
     function showNotification( event )
     {
         function buttonClicked( button, event )
-                {
-                    if( button === OK )
-                    {
-                        acknowledgedNotifications[ event.id ] = eventTime;
-                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
-                    }
+        {
+            if( button === OK )
+            {
+                acknowledgeNotification( event );
+            }
             else if( button === IGNORE )
+            {
+                var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
+                if( repeatIntervalInMilliseconds > 0 )
+                {
+                    var now = new Date();
+                    var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
+                    if( nextNotification < eventTime.getTime() )
                     {
-                        var repeatIntervalInMilliseconds = config.get( 'notificationRepeatInterval', 0 ) * 60000;
-                        if( repeatIntervalInMilliseconds > 0 )
-                        {
-                            var now = new Date();
-                            var nextNotification = now.getTime() + repeatIntervalInMilliseconds;
-                            if( nextNotification < eventTime.getTime() )
-                            {
-                                scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
-                            }
-                        }
+                        scheduleRepeatNotification( event, repeatIntervalInMilliseconds );
                     }
+                }
+            }
             else if( button === BUMP )
             {
                 bumpEvent( event );
@@ -589,9 +594,7 @@ function activate( context )
                     if( node.source === GOOGLE )
                     {
                         googleCalendar.deleteEvent( refresh, node.event.id );
-                        var acknowledgedNotifications = context.globalState.get( 'calendar.google.acknowledgedNotifications', {} );
-                        acknowledgedNotifications[ node.event.id ] = new Date();
-                        context.globalState.update( 'calendar.google.acknowledgedNotifications', acknowledgedNotifications );
+                        acknowledgeNotification( node.event );
                     }
                 }
             } );
