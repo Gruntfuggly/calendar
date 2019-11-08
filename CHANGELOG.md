@@ -1,3 +1,4 @@
+# v0.0.10 - 2019-11-08
 - Fix notification acknowledgements
 
 # v0.0.9 - 2019-11-06
