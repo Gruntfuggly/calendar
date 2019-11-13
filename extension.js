@@ -651,7 +651,7 @@ function activate( context )
                                 end: end
                             };
 
-                            googleCalendar.editEvent( refresh, node.event.id, summary, eventDateTime );
+                            googleCalendar.editEvent( refresh, node.event, summary, eventDateTime );
                         }
                     }, status, "Please update the date and time of the event", "E.g., Tomorrow at 6.30pm", "Updating event", originalDateTimeText, showEventHint );
                 }

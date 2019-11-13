@@ -242,36 +242,22 @@ function createEvent( callback, summary, eventDateTime )
     );
 }
 
-function editEvent( callback, eventId, summary, eventDateTime )
+function editEvent( callback, event, summary, eventDateTime )
 {
     var calendar = google.calendar( { version: 'v3', auth: oAuth2Client } );
-    var updatedEvent;
+    var updatedEvent = event;
+
+    updatedEvent.summary = summary;
 
     if( eventDateTime.allDay )
     {
-        updatedEvent = {
-            summary: summary,
-            // location: '800 Howard St., San Francisco, CA 94103',
-            // description: "A chance to hear more about Google's developer products.",
-            start: {
-                date: utils.toISODate( eventDateTime.start )
-            },
-            end: {
-                date: utils.toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) )
-            }
-        };
+        updatedEvent.start = { date: utils.toISODate( eventDateTime.start ) };
+        updatedEvent.end = { date: utils.toISODate( ( eventDateTime.end ? eventDateTime.end : eventDateTime.start ).addDays( 1 ) ) };
     }
     else
     {
-        updatedEvent = {
-            summary: summary,
-            start: {
-                dateTime: eventDateTime.start
-            },
-            end: {
-                dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start
-            }
-        };
+        updatedEvent.start = { dateTime: eventDateTime.start };
+        updatedEvent.end = { dateTime: eventDateTime.end ? eventDateTime.end : eventDateTime.start };
     }
 
     debug( "requested event: " + JSON.stringify( updatedEvent ) );
@@ -280,7 +266,7 @@ function editEvent( callback, eventId, summary, eventDateTime )
         {
             auth: oAuth2Client,
             calendarId: 'primary',
-            eventId: eventId,
+            eventId: event.id,
             resource: updatedEvent
         },
         function( error, result )

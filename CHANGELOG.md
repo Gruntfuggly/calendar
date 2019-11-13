@@ -1,3 +1,5 @@
+- Update events based on the original event
+
 # v0.0.10 - 2019-11-08
 - Fix notification acknowledgements
 
