@@ -1,3 +1,4 @@
+- Make sure add button is available even if tree is empty
 - Update events based on the original event
 
 # v0.0.10 - 2019-11-08

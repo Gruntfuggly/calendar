@@ -57,7 +57,7 @@
                 },
                 {
                     "command": "calendar.createEvent",
-                    "when": "view =~ /calendar/ && calendar-tree-has-content && calendar-is-authorized",
+                    "when": "view =~ /calendar/ && calendar-is-authorized",
                     "group": "navigation@1"
                 },
                 {
