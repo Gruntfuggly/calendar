@@ -1,3 +1,4 @@
+- Remove bump event functionality
 - Make sure add button is available even if tree is empty
 - Update events based on the original event
 

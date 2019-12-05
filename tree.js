@@ -233,7 +233,7 @@ class CalendarDataProvider
             tooltip: tooltip,
             visible: true,
             icon: isAllDay ? 'calendar' : 'time',
-            contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder canBump',
+            contextValue: 'canEdit canDelete canOpen canSetLocation canSetReminder',
             source: source,
             isPast: isEventPast,
             nodes: []
