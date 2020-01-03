@@ -75,7 +75,7 @@ class CalendarDataProvider
             {
                 return roots;
             }
-            return [ { label: "Nothing found" } ];
+            return [];
         }
         else if( node.type === DATE )
         {

@@ -231,6 +231,11 @@
                     "default": false,
                     "markdownDescription": "Enable a debug channel in the output view"
                 },
+                "calendar.loadOnStartup": {
+                    "type": "boolean",
+                    "default": true,
+                    "markdownDescription": "Load the calendar when the window is opened"
+                },
                 "calendar.locale": {
                     "type": "string",
                     "markdownDescription": "Normally the locale is determined automatically. This allows it to be overridden if required."

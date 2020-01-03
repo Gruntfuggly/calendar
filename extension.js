@@ -323,6 +323,10 @@ function activate( context )
         vscode.commands.executeCommand( 'setContext', 'calendar-tree-has-content', calendarTree.hasContent() );
         vscode.commands.executeCommand( 'setContext', 'calendar-in-explorer', showInExplorer );
         vscode.commands.executeCommand( 'setContext', 'calendar-is-authorized', authorized );
+
+        var message = calendarTree.hasContent() ? "" : "Click the refresh button to load the calendar...";
+        calendarView.message = message;
+        calendarViewExplorer.message = message;
     }
 
     function collapse()
@@ -814,7 +818,10 @@ function activate( context )
 
         resetOutputChannel();
         setContext();
-        fetch();
+        if( vscode.workspace.getConfiguration( 'calendar' ).get( 'loadOnStartup', true ) === true )
+        {
+            fetch();
+        }
         setAutoRefreshTimer();
         purgeAcknowledgedNotifications();
     }
