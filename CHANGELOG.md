@@ -1,5 +1,7 @@
 # Calendar Change Log
 
+## v0.0.12 - 2020-01-29
+
 - Show date in view title
 
 ## v0.0.11 - 2019-12-05
