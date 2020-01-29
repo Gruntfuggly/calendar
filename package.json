@@ -245,6 +245,11 @@
                     "markdownDescription": "If true, show the view in the explorer. Set to false if you only want to use the dedicated view in the activity bar",
                     "default": true
                 },
+                "calendar.showDateInTitle": {
+                    "type": "boolean",
+                    "markdownDescription": "Sets the view title to the current date.",
+                    "default": true
+                },
                 "calendar.maxEvents": {
                     "type": "integer",
                     "default": 10,

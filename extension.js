@@ -327,6 +327,15 @@ function activate( context )
         var message = calendarTree.hasContent() ? "" : "Click the refresh button to load the calendar...";
         calendarView.message = message;
         calendarViewExplorer.message = message;
+
+        var title = "Calendar";
+        if( vscode.workspace.getConfiguration( 'calendar' ).get( 'showDateInTitle' ) )
+        {
+            var now = new Date();
+            title = now.toLocaleDateString( utils.getLocale(), { dateStyle: "long" } );
+        }
+        calendarView.title = title;
+        calendarViewExplorer.title = title;
     }
 
     function collapse()
@@ -789,7 +798,9 @@ function activate( context )
                         vscode.window.showErrorMessage( "Invalid locale: " + locale );
                     }
                 }
-                else if( e.affectsConfiguration( 'calendar.showInExplorer' ) )
+                else if(
+                    e.affectsConfiguration( 'calendar.showInExplorer' ) ||
+                    e.affectsConfiguration( 'calendar.showDateInTitle' ) )
                 {
                     setContext();
                 }
