@@ -1,6 +1,6 @@
 # Calendar
 
-<img src="https://raw.githubusercontent.com/Gruntfuggly/calendar/master/resources/screenshot.png">
+![Screenshot](https://raw.githubusercontent.com/Gruntfuggly/calendar/master/resources/screenshot.png)
 
 Shows your upcoming events from your Google calendar in a tree view inside VSCode. Also allows simple
 events to be created, modified and deleted.
@@ -21,7 +21,7 @@ Alternatively, open Visual Studio code, press `Ctrl+P` or `Cmd+P` and type:
 
 ### Google calendar authorization
 
-1. Visit https://developers.google.com/calendar/quickstart/nodejs
+1. Visit <https://developers.google.com/calendar/quickstart/nodejs>
 2. Click the **Enable the Google Calendar API** button in *Step 1*.
 3. Click the **DOWNLOAD CLIENT CONFIGURATION** button and save the file somewhere.
 4. Update the `calendar.google.credentialsFile` setting to point to the saved file.
@@ -33,7 +33,7 @@ Alternatively, open Visual Studio code, press `Ctrl+P` or `Cmd+P` and type:
 
 ### Outlook calendar authorization
 
-*Not currently supported*
+*Not currently supported.*
 
 ### Source Code
 
@@ -48,6 +48,7 @@ The source code is available on GitHub [here](https://github.com/Gruntfuggly/cal
 | calendar.showInExplorer                   | true    | If true, show the view in the explorer view.                                                                          |
 | calendar.maxEvents                        | 10      | Maximum number of future events to fetch from your calendar.                                                          |
 | calendar.historicDays                     | 0       | Set this to show past events in tree (*Note:* `calendar.maxEvents` *is still applied*).                               |
+| calendar.showDateInTitle                  | true    | Set to false to disable showing the current date in the view title.                                                   |
 | calendar.showRelativeDates                | true    | Set to false to show full dates instead of **Today**, **Tomorrow**, etc.                                              |
 | calendar.autoRefreshInterval              | 60      | The number of minutes between automatic refreshes of the calendar. Set to zero to disable automatic refreshing.       |
 | calendar.notificationInterval             | 60      | Show a notification of an event this number of minutes before it occurs. Set to zero to disable notifications.        |
@@ -65,15 +66,15 @@ The awesome [chrono-node](https://www.npmjs.com/package/chrono-node) module used
 
 ## Donate
 
-If you find this extension useful, please feel free to donate <a href="https://paypal.me/Gruntfuggly">here</a>. Thanks!
+If you find this extension useful, please feel free to donate [here](https://paypal.me/Gruntfuggly). Thanks!
 
 ### Credits
 
-- Dentist, food and anniversary icon made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
-- Lock and Time icons made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
-- Birthday icon made by <a href="https://www.flaticon.com/authors/srip" title="srip">srip</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-- Doctor icon made by <a href="https://www.flaticon.com/authors/prosymbols" title="Prosymbols">Prosymbols</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-- Car icon made by <a href="https://www.flaticon.com/authors/kiranshastry" title="Kiranshastry">Kiranshastry</a> from <a href="https://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
-- Plane icon made by <a href="https://www.flaticon.com/authors/good-ware" title="Good Ware">Good Ware</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
-- Alarm icon made by <a href="https://www.flaticon.com/authors/pixel-perfect" title="Pixel perfect">Pixel perfect</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+- Dentist, food and anniversary icon made by [Freepik](https://www.flaticon.com/authors/freepik) from <https://www.flaticon.com>
+- Lock and Time icons made by [Smashicons](https://www.flaticon.com/authors/smashicons) from <https://www.flaticon.com>
+- Birthday icon made by [srip](https://www.flaticon.com/authors/srip) from <https://www.flaticon.com/>
+- Doctor icon made by [Prosymbols](https://www.flaticon.com/authors/prosymbols) from <https://www.flaticon.com/>
+- Car icon made by [Kiranshastry](https://www.flaticon.com/authors/kiranshastry) from <https://www.flaticon.com>
+- Plane icon made by [Good Ware](https://www.flaticon.com/authors/good-ware from <https://www.flaticon.com/>
+- Alarm icon made by [Pixel perfect](https://www.flaticon.com/authors/pixel-perfect) from <https://www.flaticon.com/>
 - Other icons from the [vscode](https://github.com/microsoft/vscode-icons) icon set.
