@@ -1,5 +1,7 @@
 # Calendar Change Log
 
+- Use "Next" for days in the next week when showing relative dates
+
 ## v0.0.12 - 2020-01-29
 
 - Show date in view title

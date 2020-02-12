@@ -108,9 +108,13 @@ function dateLabel( date )
         {
             return "Tomorrow";
         }
-        else if( difference < 8 )
+        else if( difference < 7 )
         {
             return date.toLocaleString( getLocale(), { weekday: 'long' } );
+        }
+        else if( difference < 13 )
+        {
+            return "Next " + date.toLocaleString( getLocale(), { weekday: 'long' } );
         }
     }
 
