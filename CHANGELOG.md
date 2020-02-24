@@ -1,6 +1,7 @@
 # Calendar Change Log
 
 - Use "Next" for days in the next week when showing relative dates
+- Bubble single event icons and tooltips up to date node
 
 ## v0.0.12 - 2020-01-29
 

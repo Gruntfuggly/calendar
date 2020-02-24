@@ -128,7 +128,19 @@ class CalendarDataProvider
 
         if( node.icon )
         {
-            treeItem.iconPath = this.getIcon( node.icon );
+            if( node.type === DATE && node.nodes && node.nodes.length === 1 )
+            {
+                treeItem.iconPath = this.getIcon( node.nodes[ 0 ].icon );
+            }
+            else
+            {
+                treeItem.iconPath = this.getIcon( node.icon );
+            }
+        }
+
+        if( node.type === DATE && node.nodes && node.nodes.length === 1 )
+        {
+            treeItem.tooltip = node.nodes[ 0 ].label;
         }
 
         if( node.nodes && node.nodes.length > 0 )
